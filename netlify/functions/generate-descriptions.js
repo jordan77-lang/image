@@ -292,13 +292,16 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { image, context, referenceDocument } = JSON.parse(event.body);
+    const { image, imageData, context, referenceDocument, type } = JSON.parse(event.body);
+    
+    // Handle both parameter names for image data
+    const finalImageData = image || imageData;
 
-    if (!image) {
+    if (!finalImageData) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({ error: 'Image data is required' }),
+        body: JSON.stringify({ error: 'Image (base64 or URL) is required as a string.' }),
       };
     }
 
@@ -383,7 +386,7 @@ Follow all standards exactly as specified in the reference materials above.`;
             { type: 'text', text: prompt },
             { 
               type: 'image_url', 
-              image_url: { url: image } 
+              image_url: { url: finalImageData } 
             }
           ]
         }
@@ -483,6 +486,10 @@ Follow all standards exactly as specified in the reference materials above.`;
       headers,
       body: JSON.stringify({
         success: true,
+        altText: sections.altText,
+        figureDescription: sections.figureDescription,
+        longDescription: sections.longDescription,
+        transcribedText: sections.transcribedText,
         sections,
         counts,
         rawResponse: result
