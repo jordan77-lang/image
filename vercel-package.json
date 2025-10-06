@@ -5,10 +5,14 @@
   "main": "api/generate-descriptions.js",
   "scripts": {
     "dev": "vercel dev",
+    "build": "vercel build",
     "deploy": "vercel --prod"
   },
   "dependencies": {
     "openai": "^4.20.1"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

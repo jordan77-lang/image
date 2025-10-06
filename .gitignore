@@ -30,3 +30,4 @@ __pycache__/
 .Python
 venv/
 env/
+.vercel
