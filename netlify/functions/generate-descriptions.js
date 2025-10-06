@@ -59,16 +59,21 @@ Content Requirements:
 
 === TRANSCRIBED TEXT STANDARDS ===
 
-Accuracy:
-- Transcribe all visible text in logical reading order
+CRITICAL RULE: LITERAL TRANSCRIPTION ONLY
+- Transcribe text EXACTLY as it appears - no interpretation
+- If axis shows "0, 5, 10, 15, 20" write exactly that, not "0 to 20"
+- If labels show "10, 11, 12, 13, 14" write each number individually
 - Preserve spelling, capitalization, punctuation, and unit abbreviations exactly as shown
-- Include axis labels, legends, titles, and data values
+- Include every visible axis label, tick mark, legend entry, title, and data value
 
-Special Cases:
-- For frequency distributions: List each bin's range exactly as shown followed by bar height
-- Put each "range: frequency" pair on separate line
-- Include bins with zero height if labeled on axis
+Format Guidelines:
+- Use line breaks to separate different text elements
+- Group related text logically (titles, then axis labels, then data values)
+- For charts: List each visible axis tick mark individually
+- For data labels: Include every visible number/label separately
 - If no text visible, write "No text visible in image"
+
+REMEMBER: You are a transcription service - copy exactly what you see!
 
 === FIGURE LEGENDS BEST PRACTICES ===
 
@@ -335,11 +340,13 @@ Generate exactly four sections:
    - SENTENCE 2: How the data/elements support this principle
    - SENTENCE 3: Scientific significance or practical importance
 3. **Long Description**: Comprehensive description starting with "This image is a..."
-4. **Transcribed Text**: Extract ALL visible text exactly as shown, including:
-   - All axis labels, titles, legends, and captions
-   - Every number, measurement, and data value
-   - All text in charts, graphs, and diagrams
-   - Text in any order that makes logical sense for reading
+4. **Transcribed Text**: EXACT LITERAL TRANSCRIPTION of all visible text:
+   - Write each piece of text EXACTLY as it appears
+   - If you see "10, 11, 12, 13, 14" write that, NOT "10 to 14"
+   - List every axis tick mark, data label, number individually
+   - Include all titles, legends, captions word-for-word
+   - Use line breaks to organize different text elements
+   - DO NOT summarize, interpret, or create ranges
    - If no text is visible, write "No text visible in image"
 
 CRITICAL ACCESSIBILITY REQUIREMENTS:
@@ -351,13 +358,23 @@ CRITICAL ACCESSIBILITY REQUIREMENTS:
 
 🚨 TRANSCRIBED TEXT REQUIREMENTS 🚨
 
-MANDATORY: For Transcribed Text section, you MUST include:
-- Every piece of visible text in the image
-- All numbers, labels, titles, axis labels, legends
-- Data values, measurements, units, percentages
-- Text in logical reading order (top to bottom, left to right)
-- Even small text or partial text visible in the image
-- If there's a lot of text, include it ALL - don't summarize or skip anything
+CRITICAL: Transcribed Text must be EXACT transcription, NOT interpretation or summarization!
+
+MANDATORY Rules:
+- Write EXACTLY what you see, character by character
+- If you see "10, 11, 12, 13, 14" write "10, 11, 12, 13, 14" - NOT "10 to 14"
+- If you see individual numbers/labels, list each one separately
+- Do NOT create ranges or summaries - transcribe literally
+- Include every visible number, word, symbol, punctuation mark
+- Preserve exact spacing, line breaks, and formatting
+- Use bullet points or line breaks to show text organization
+- If axis shows "0, 5, 10, 15, 20" write exactly that, not "0 to 20"
+
+TRANSCRIPTION EXAMPLES:
+✅ CORRECT: "Hatching success (percent)\n0\n10\n20\n30\n40\n50"
+❌ WRONG: "Hatching success (percent) 0 to 50"
+✅ CORRECT: "Temperature: 10°C, 15°C, 20°C, 25°C"  
+❌ WRONG: "Temperature: 10 to 25°C"
 
 🚨 FIGURE DESCRIPTION WRITING RULES 🚨
 
