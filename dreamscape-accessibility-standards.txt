@@ -1,0 +1,79 @@
+DREAMSCAPE LEARN ACCESSIBILITY STANDARDS
+
+This document provides institutional standards for creating accessible image content that aligns with Dreamscape Learn curriculum requirements.
+
+=== ALT TEXT STANDARDS ===
+
+Character Limit: 120 characters maximum
+- Count only visible characters (letters, numbers, punctuation, spaces)
+- Do not count quotation marks unless part of actual alt text
+
+Language Requirements:
+- Use active voice and present tense
+- Use "to" instead of hyphens in numeric ranges (e.g., "5 to 6" not "5-6")
+- Spell out all units in full (e.g., "milligrams per liter" not "mg/L")
+- Use "frequency distribution" instead of "bar chart" or "histogram"
+
+Content Guidelines:
+- Describe only what is visually present
+- Include essential visual information for understanding
+- Avoid redundant phrases like "image of" or "picture showing"
+- Focus on educational content and key data points
+
+=== FIGURE DESCRIPTION STANDARDS ===
+
+Structure (Kroodsma Style):
+1. Begin with take-home message (main finding or insight)
+2. Follow with supporting details giving clear context
+3. Include variables, comparisons, patterns and their connections
+4. Make description stand-alone and fully communicative
+
+Requirements:
+- Use full sentences, no fragments or bullet points
+- Keep language plain and accessible
+- Explain what relationships mean, don't just list what figure shows
+- Length: 1-3 sentences (typically up to 50 words, but may exceed for clarity)
+- NEVER begin with "Figure #." - start directly with scientific content
+- Do NOT end with generic purpose sentences like "This figure allows you to evaluate..."
+
+Examples:
+- Good: "Arsenic's position in the periodic table reveals its chemical reactivity and similarity to nearby elements."
+- Poor: "Periodic table with arsenic highlighted."
+
+=== LONG DESCRIPTION STANDARDS ===
+
+Format:
+- Always begin with: "This image is a [type] showing..."
+- Use plain language and short clauses
+- Emphasize educational takeaway: trend, relationship, or concept the image teaches
+
+Content Requirements:
+- Focus on educational significance and learning objectives
+- Use "to" for numeric ranges instead of hyphens
+- Spell out all units in full (no abbreviations)
+- Use "frequency distribution" not "bar chart" or "histogram"
+- Never restate paragraph text or captions
+
+=== TRANSCRIBED TEXT STANDARDS ===
+
+Accuracy:
+- Transcribe all visible text in logical reading order
+- Preserve spelling, capitalization, punctuation, and unit abbreviations exactly as shown
+- Include axis labels, legends, titles, and data values
+
+Special Cases:
+- For frequency distributions: List each bin's range exactly as shown followed by bar height
+- Put each "range: frequency" pair on separate line
+- Include bins with zero height if labeled on axis
+- If no text visible, write "No text visible in image"
+
+=== QUALITY CHECKLIST ===
+
+Before finalizing accessibility content, verify:
+- Alt text is ≤120 characters
+- Figure description starts with take-home message
+- Long description begins with "This image is a..."
+- All units are spelled out in full
+- Numeric ranges use "to" format
+- Language is clear and educationally focused
+- Content supports learning objectives

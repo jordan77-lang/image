@@ -1,0 +1,62 @@
+FIGURE LEGENDS AND DESCRIPTIONS BEST PRACTICES
+
+Based on "A Quick Fix for Figure Legends and Table Headings" guidance for creating effective educational figure descriptions.
+
+=== FIGURE LEGEND PRINCIPLES ===
+
+Primary Purpose:
+- Make figures accessible to all students including those with visual impairments
+- Provide context that helps students interpret data and understand concepts
+- Support learning objectives through clear, structured descriptions
+
+Core Requirements:
+- Figure legends should be comprehensive yet concise
+- Include both visual elements and conceptual significance
+- Connect visual information to educational goals
+
+=== WRITING EFFECTIVE FIGURE DESCRIPTIONS ===
+
+Structure:
+1. Start directly with scientific content and main finding (NEVER with "Figure")
+2. Describe key data patterns and relationships
+3. Explain educational significance or scientific meaning
+4. Include specific data points when relevant for learning
+
+Language Guidelines:
+- Use descriptive, specific language
+- Avoid vague terms like "shows" or "depicts" without detail
+- Include quantitative information when educationally relevant
+- Connect visual elements to course concepts
+
+Examples of Effective Descriptions:
+- "Line graph comparing enzyme activity rates across temperature ranges from 20 to 80 degrees Celsius, showing optimal activity at 37 degrees"
+- "Molecular diagram illustrating hydrogen bonding between water molecules, with dashed lines indicating bond formations"
+- "Scatter plot demonstrating positive correlation between study hours and test scores across 100 students"
+
+=== ACCESSIBILITY CONSIDERATIONS ===
+
+Screen Reader Compatibility:
+- Write descriptions that work well when read aloud
+- Include spatial relationships (left, right, above, below)
+- Specify colors only when educationally significant
+- Describe patterns, trends, and distributions clearly
+
+Educational Context:
+- Align descriptions with learning objectives
+- Emphasize conceptual understanding over purely visual details
+- Include units of measurement and scale information
+- Connect to broader course themes and concepts
+
+=== QUALITY STANDARDS ===
+
+Completeness Check:
+- Can a student understand the figure's educational purpose from description alone?
+- Are key data relationships clearly explained?
+- Is the connection to course content evident?
+- Would this description support assessment and learning goals?
+
+Technical Accuracy:
+- Verify all numerical data and units
+- Ensure scientific terminology is correct
+- Check that spatial relationships are accurately described
+- Confirm alignment with textbook and course standards

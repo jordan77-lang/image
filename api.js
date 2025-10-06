@@ -5,57 +5,7 @@ class AccessibilityAPI {
         this.apiKey = apiKey;
     }
 
-    async generateAltText(imageData, context = '') {
-        try {
-            const response = await fetch(`${this.apiEndpoint}/generate-alt-text`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
-                },
-                body: JSON.stringify({
-                    image: imageData,
-                    context: context,
-                    type: 'alt-text'
-                })
-            });
 
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error generating alt text:', error);
-            throw error;
-        }
-    }
-
-    async generateLongDescription(imageData, context = '') {
-        try {
-            const response = await fetch(`${this.apiEndpoint}/generate-long-description`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
-                },
-                body: JSON.stringify({
-                    image: imageData,
-                    context: context,
-                    type: 'long-description'
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Error generating long description:', error);
-            throw error;
-        }
-    }
 
     async generateBoth(imageData, context = '') {
         try {
