@@ -264,7 +264,8 @@ function getClient() {
 }
 
 exports.handler = async (event, context) => {
-  console.log('🚨 FUNCTION CALLED - Figure numbering prevention ACTIVE');
+  console.log('🚨 FUNCTION CALLED - Figure numbering prevention ACTIVE v2.0');
+  console.log('Deployment timestamp:', new Date().toISOString());
   
   // Enable CORS
   const headers = {
