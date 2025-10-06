@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration - Update these with your actual API details
     const API_CONFIG = {
-        endpoint: 'https://image-6vcao9yu6-mark-jordans-projects-973d0f6d.vercel.app/api', // Your Vercel deployment URL
+        endpoint: 'https://image-accessibility-tool.netlify.app/api', // Your Netlify deployment URL
         apiKey: null // API key is handled server-side for security
     };
 
