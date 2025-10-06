@@ -335,7 +335,12 @@ Generate exactly four sections:
    - SENTENCE 2: How the data/elements support this principle
    - SENTENCE 3: Scientific significance or practical importance
 3. **Long Description**: Comprehensive description starting with "This image is a..."
-4. **Transcribed Text**: All visible text in logical reading order
+4. **Transcribed Text**: Extract ALL visible text exactly as shown, including:
+   - All axis labels, titles, legends, and captions
+   - Every number, measurement, and data value
+   - All text in charts, graphs, and diagrams
+   - Text in any order that makes logical sense for reading
+   - If no text is visible, write "No text visible in image"
 
 CRITICAL ACCESSIBILITY REQUIREMENTS:
 - For Alt Text and Long Description: NEVER use unit abbreviations (e.g., use "milligrams per liter" not "mg/L", use "degrees Celsius" not "°C", use "percent" not "%")
@@ -343,6 +348,16 @@ CRITICAL ACCESSIBILITY REQUIREMENTS:
 - For Figure Description: Always spell out all units completely for screen reader accessibility  
 - For Transcribed Text: Preserve exact text as shown (including abbreviations if present in original)
 - Use "to" instead of hyphens for ranges (e.g., "5 to 10" not "5-10")
+
+🚨 TRANSCRIBED TEXT REQUIREMENTS 🚨
+
+MANDATORY: For Transcribed Text section, you MUST include:
+- Every piece of visible text in the image
+- All numbers, labels, titles, axis labels, legends
+- Data values, measurements, units, percentages
+- Text in logical reading order (top to bottom, left to right)
+- Even small text or partial text visible in the image
+- If there's a lot of text, include it ALL - don't summarize or skip anything
 
 🚨 FIGURE DESCRIPTION WRITING RULES 🚨
 
@@ -522,9 +537,16 @@ Generate a concise alt text under 120 characters:`
     }
 
     // Extract Transcribed Text
-    const transcribedMatch = result.match(/\*\*Transcribed Text.*?\*\*[:\s]*(.*?)(?=\n\*\*|\n\n|\n[0-9]\.|\n[a-zA-Z]|$)/s);
+    const transcribedMatch = result.match(/\*\*Transcribed Text.*?\*\*[:\s]*(.*?)(?=\n\*\*[A-Z]|$)/s);
     if (transcribedMatch) {
-      sections.transcribedText = transcribedMatch[1].trim();
+      let transcribedText = transcribedMatch[1].trim();
+      
+      // Clean up any trailing content that might be captured
+      transcribedText = transcribedText.replace(/\n\s*\n[\s\S]*$/, ''); // Remove double newlines and everything after
+      transcribedText = transcribedText.replace(/\n\d+\.\s*[\s\S]*$/, ''); // Remove numbered lists that aren't part of transcription
+      
+      sections.transcribedText = transcribedText.trim();
+      console.log('Extracted transcribed text length:', transcribedText.length);
     }
 
     // Calculate character counts
