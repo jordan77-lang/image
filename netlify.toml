@@ -1,6 +1,6 @@
 [build]
   functions = "netlify/functions"
-  command = "echo 'No build needed'"
+  command = "echo 'Build completed at:' && date"
   publish = "."
 
 [build.environment]
