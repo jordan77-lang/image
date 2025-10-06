@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Image Accessibility Tool - Generate alt text and long descriptions for images used in DSL curriculum">
+    <title>Image Accessibility Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="container">
+                <h1>Image Accessibility Tool</h1>
+                <p class="tagline">Making DSL curriculum images accessible to everyone</p>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>Create Better Alt Text and Long Descriptions</h2>
+                <p>Use our specialized GPT to generate high-quality alt text and long descriptions for images in DSL curriculum materials.</p>
+                <div class="cta-buttons">
+                    <a href="#about" class="btn btn-primary">Learn More</a>
+                    <a href="#how-to-use" class="btn btn-secondary">Get Started</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <div class="container">
+                <h2>About This Tool</h2>
+                <p>This GPT-powered tool is designed to help educators and content creators generate accessible image descriptions for digital learning materials. It follows best practices for web accessibility and WCAG guidelines.</p>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <h3>🎯 Context-Aware</h3>
+                        <p>Generates descriptions tailored to DSL curriculum context</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📝 Alt Text</h3>
+                        <p>Creates concise, meaningful alt text for screen readers</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📖 Long Descriptions</h3>
+                        <p>Provides detailed descriptions for complex images</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>♿ WCAG Compliant</h3>
+                        <p>Follows accessibility standards and best practices</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-to-use" class="section section-alt">
+            <div class="container">
+                <h2>How to Use</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Access the GPT</h3>
+                            <p>Click the button below to open the Image Accessibility GPT in ChatGPT.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Upload Your Image</h3>
+                            <p>Upload the image you want to create accessibility content for.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Provide Context</h3>
+                            <p>Share information about how the image is used in your curriculum.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Get Results</h3>
+                            <p>Receive tailored alt text and long descriptions for your image.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="gpt-access">
+                    <p class="note"><strong>Note:</strong> You'll need a ChatGPT account to use this tool. If you don't have one, you can sign up for free at <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">chat.openai.com</a>.</p>
+                    <a href="#" class="btn btn-primary btn-large" id="gpt-link">Open Image Accessibility GPT</a>
+                    <p class="small-text">The GPT link will be available soon. Check back or contact the repository owner for access.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="best-practices" class="section">
+            <div class="container">
+                <h2>Accessibility Best Practices</h2>
+                <div class="best-practices-grid">
+                    <div class="practice">
+                        <h3>Alt Text Guidelines</h3>
+                        <ul>
+                            <li>Keep it concise (typically under 150 characters)</li>
+                            <li>Describe the content and function of the image</li>
+                            <li>Don't start with "image of" or "picture of"</li>
+                            <li>Include text that appears in the image</li>
+                            <li>Consider context and purpose</li>
+                        </ul>
+                    </div>
+                    <div class="practice">
+                        <h3>Long Descriptions</h3>
+                        <ul>
+                            <li>Use for complex images like charts, diagrams, and infographics</li>
+                            <li>Provide detailed information that conveys the same meaning</li>
+                            <li>Structure the description logically</li>
+                            <li>Include data points and relationships</li>
+                            <li>Make it accessible to screen reader users</li>
+                        </ul>
+                    </div>
+                    <div class="practice">
+                        <h3>When to Use Each</h3>
+                        <ul>
+                            <li><strong>Alt text:</strong> All images need alt attributes</li>
+                            <li><strong>Long description:</strong> Complex images that need more detail</li>
+                            <li><strong>Decorative images:</strong> Use empty alt attribute (alt="")</li>
+                            <li><strong>Text in images:</strong> Include all text in alt or long description</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="section section-alt">
+            <div class="container">
+                <h2>Additional Resources</h2>
+                <div class="resources-list">
+                    <a href="https://www.w3.org/WAI/tutorials/images/" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>W3C Image Tutorial</h3>
+                        <p>Comprehensive guide to making images accessible</p>
+                    </a>
+                    <a href="https://webaim.org/articles/gonewild/#images" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>WebAIM: Alternative Text</h3>
+                        <p>Best practices for writing alt text</p>
+                    </a>
+                    <a href="https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>WCAG 2.1: Non-text Content</h3>
+                        <p>Understanding accessibility requirements</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="container">
+                <h2>Contact & Contribute</h2>
+                <p>This tool is open source and hosted on GitHub. We welcome contributions and feedback!</p>
+                <div class="contact-buttons">
+                    <a href="https://github.com/jordan77-lang/image" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on GitHub</a>
+                    <a href="https://github.com/jordan77-lang/image/issues" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Report an Issue</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 Image Accessibility Tool. Open source project for DSL curriculum.</p>
+            <p>Licensed under MIT License. Contributions welcome!</p>
+        </div>
+    </footer>
+</body>
+</html>
