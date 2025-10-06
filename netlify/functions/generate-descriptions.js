@@ -402,7 +402,61 @@ Follow all standards exactly as specified in the reference materials above.`;
     // Extract Alt Text
     const altMatch = result.match(/\*\*Alt Text.*?\*\*[:\s]*(.*?)(?=\n\*\*|\n\n|\n[0-9]\.|\n[a-zA-Z]|$)/s);
     if (altMatch) {
-      sections.altText = altMatch[1].trim();
+      let altText = altMatch[1].trim();
+      
+      // Check if alt text exceeds 120 characters and retry if needed
+      if (altText.length > 120) {
+        console.log(`Alt text too long (${altText.length} chars), retrying for shorter version...`);
+        
+        try {
+          const retryResponse = await client.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: `The previous alt text was too long (${altText.length} characters). Please create a shorter alt text (under 120 characters) for this image. Focus on the most essential elements only.
+
+CRITICAL: Maximum 120 characters including spaces and punctuation.
+
+Current alt text: "${altText}"
+
+Generate a concise alt text under 120 characters:`
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: { url: finalImageData }
+                  }
+                ]
+              }
+            ],
+            max_tokens: 100,
+            temperature: 0.3
+          });
+          
+          const shorterAltText = retryResponse.choices[0].message.content.trim();
+          
+          // Clean up any formatting or quotes
+          const cleanAltText = shorterAltText.replace(/^["']|["']$/g, '').trim();
+          
+          if (cleanAltText.length <= 120) {
+            altText = cleanAltText;
+            console.log(`✅ Retry successful: ${altText.length} characters`);
+          } else {
+            console.log(`⚠️ Retry still too long (${cleanAltText.length} chars), truncating...`);
+            altText = cleanAltText.substring(0, 117) + '...';
+          }
+        } catch (retryError) {
+          console.error('Alt text retry failed:', retryError);
+          // Fallback: truncate original alt text
+          altText = altText.substring(0, 117) + '...';
+        }
+      }
+      
+      sections.altText = altText;
+      console.log(`Final alt text: ${altText.length} characters - "${altText}"`);
     }
 
     // Extract Figure Description  
