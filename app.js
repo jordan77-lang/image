@@ -1,8 +1,10 @@
 // Main application logic for the accessibility tool
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration - Use production API for now
+    // Configuration - Auto-detect local vs production
     const API_CONFIG = {
-        endpoint: 'https://image-accessibility-tool.netlify.app/.netlify/functions',
+        endpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8888/.netlify/functions' // Local Netlify Dev
+            : 'https://image-accessibility-tool.netlify.app/.netlify/functions', // Production
         apiKey: null // API key is handled server-side for security
     };
 

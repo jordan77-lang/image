@@ -316,17 +316,53 @@ exports.handler = async (event, context) => {
       combinedReferences += '\n\n=== ADDITIONAL CONTEXT ===\n\n' + referenceDocument;
     }
 
-    // Create comprehensive prompt for all four sections
-    const prompt = `You are an expert in creating accessible educational content for Dreamscape Learn curriculum. Generate accessibility content for this image following our institutional standards.
+    // First, detect the image type to use appropriate prompts
+    const imageTypeDetection = await getClient().chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Analyze this image and classify it into ONE of these categories:
+              
+              CHART_GRAPH: Charts, graphs, data visualizations, diagrams with data points
+              SCIENTIFIC_FIGURE: Scientific diagrams, biological illustrations, technical schematics
+              PHOTOGRAPH: Regular photographs of people, animals, objects, scenes
+              MIXED: Combination of data visualization and photographs
+              
+              Respond with just the category name:`
+            },
+            {
+              type: 'image_url',
+              image_url: { url: finalImageData }
+            }
+          ]
+        }
+      ],
+      max_tokens: 20,
+      temperature: 0.1
+    });
 
-REFERENCE MATERIALS:
-${combinedReferences}
+    const imageType = imageTypeDetection.choices[0].message.content.trim();
+    console.log('🔍 Detected image type:', imageType);
 
-USER CONTEXT: ${context || 'No additional context provided'}
-
-Generate exactly four sections:
-
-1. **Alt Text** (120 characters max): Brief description for screen readers
+    // Create appropriate prompt based on image type
+    let specificPrompt = '';
+    
+    if (imageType === 'PHOTOGRAPH') {
+      specificPrompt = `
+2. **Figure Description**: Write a clear, educational description explaining what is shown and its relevance:
+   - Start with what is depicted in the image
+   - Explain the educational or contextual significance
+   - Focus on observable details that support learning objectives
+   - Use accessible, descriptive language
+   
+   AVOID scientific jargon unless the image contains scientific content
+   Focus on clear, educational description rather than technical analysis`;
+    } else {
+      specificPrompt = `
 2. **Figure Description**: Write INTERPRETIVE descriptions that explain scientific meaning.
    
    CRITICAL RULES:
@@ -338,7 +374,23 @@ Generate exactly four sections:
    THREE-SENTENCE KROODSMA STRUCTURE:
    - SENTENCE 1: Main scientific principle/finding
    - SENTENCE 2: How the data/elements support this principle
-   - SENTENCE 3: Scientific significance or practical importance
+   - SENTENCE 3: Scientific significance or practical importance`;
+    }
+
+    // Create comprehensive prompt for all four sections
+    const prompt = `You are an expert in creating accessible educational content for Dreamscape Learn curriculum. Generate accessibility content for this image following our institutional standards.
+
+IMAGE TYPE DETECTED: ${imageType}
+
+REFERENCE MATERIALS:
+${combinedReferences}
+
+USER CONTEXT: ${context || 'No additional context provided'}
+
+Generate exactly four sections:
+
+1. **Alt Text** (120 characters max): Brief description for screen readers
+${specificPrompt}
 3. **Long Description**: Comprehensive description starting with "This image is a..."
 4. **Transcribed Text**: EXACT LITERAL TRANSCRIPTION of all visible text:
    - Write each piece of text EXACTLY as it appears
