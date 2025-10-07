@@ -1,8 +1,8 @@
 // Main application logic for the accessibility tool
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration - Update these with your actual API details
+    // Configuration - Use production API for now
     const API_CONFIG = {
-        endpoint: 'https://image-accessibility-tool.netlify.app/api', // Your Netlify deployment URL
+        endpoint: 'https://image-accessibility-tool.netlify.app/.netlify/functions',
         apiKey: null // API key is handled server-side for security
     };
 
@@ -45,15 +45,54 @@ document.addEventListener('DOMContentLoaded', function() {
         const file = event.target.files[0];
         if (!file) return;
 
+        const progressIndicator = document.getElementById('image-upload-progress');
+        const progressFill = document.getElementById('image-progress-fill');
+        const progressMessage = document.getElementById('image-progress-message');
+        const progressPercentage = document.getElementById('image-progress-percentage');
+
         try {
+            // Show progress indicator
+            if (progressIndicator) {
+                progressIndicator.style.display = 'block';
+                if (progressMessage) progressMessage.textContent = 'Validating image...';
+                if (progressPercentage) progressPercentage.textContent = '10%';
+                if (progressFill) progressFill.style.width = '10%';
+            }
+
             // Validate the image file
             ImageProcessor.validateImageFile(file);
             
+            // Update progress
+            if (progressIndicator) {
+                if (progressMessage) progressMessage.textContent = 'Processing image...';
+                if (progressPercentage) progressPercentage.textContent = '50%';
+                if (progressFill) progressFill.style.width = '50%';
+            }
+
             // Convert to base64
             currentImage = await ImageProcessor.fileToBase64(file);
             
+            // Update progress
+            if (progressIndicator) {
+                if (progressMessage) progressMessage.textContent = 'Creating preview...';
+                if (progressPercentage) progressPercentage.textContent = '80%';
+                if (progressFill) progressFill.style.width = '80%';
+            }
+
             // Show preview
             showImagePreview(currentImage, file.name);
+            
+            // Complete progress
+            if (progressIndicator) {
+                if (progressMessage) progressMessage.textContent = 'Image ready!';
+                if (progressPercentage) progressPercentage.textContent = '100%';
+                if (progressFill) progressFill.style.width = '100%';
+                
+                // Hide progress bar after a short delay
+                setTimeout(() => {
+                    progressIndicator.style.display = 'none';
+                }, 1500);
+            }
             
             // Enable generate button
             if (generateBtn) {
@@ -62,6 +101,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             clearError();
         } catch (error) {
+            // Hide progress indicator on error
+            if (progressIndicator) {
+                progressIndicator.style.display = 'none';
+            }
+            
             showError(error.message);
             currentImage = null;
             if (generateBtn) {
@@ -335,11 +379,17 @@ document.addEventListener('DOMContentLoaded', function() {
             showLoading(true);
             clearError();
             
+            console.log('🚀 Starting generation with endpoint:', API_CONFIG.endpoint);
+            console.log('📷 Image data length:', currentImage ? currentImage.length : 0);
+            console.log('📝 Context length:', context ? context.length : 0);
+            
             // Generate both alt text and long description
             const result = await api.generateBoth(currentImage, context);
+            console.log('✅ Generation successful:', result);
             
             showResults(result);
         } catch (error) {
+            console.error('❌ Generation failed:', error);
             showError(`Failed to generate descriptions: ${error.message}`);
         } finally {
             showLoading(false);

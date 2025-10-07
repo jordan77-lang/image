@@ -9,6 +9,8 @@ class AccessibilityAPI {
 
     async generateBoth(imageData, context = '') {
         try {
+            console.log('🌐 Making API request to:', `${this.apiEndpoint}/generate-descriptions`);
+            
             const response = await fetch(`${this.apiEndpoint}/generate-descriptions`, {
                 method: 'POST',
                 headers: {
@@ -22,13 +24,19 @@ class AccessibilityAPI {
                 })
             });
 
+            console.log('📡 API Response status:', response.status, response.statusText);
+
             if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
+                const errorText = await response.text();
+                console.error('❌ API Error Response:', errorText);
+                throw new Error(`API Error: ${response.status} - ${errorText}`);
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('✅ API Success:', result);
+            return result;
         } catch (error) {
-            console.error('Error generating descriptions:', error);
+            console.error('💥 API Call Failed:', error);
             throw error;
         }
     }

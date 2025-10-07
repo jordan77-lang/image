@@ -4,27 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Image Accessibility Tool - Generate alt text and long descriptions for images used in DSL curriculum">
+    <meta name="theme-color" content="#111111">
+    <meta name="version" content="2025-01-27T12:00:00Z">
     <title>Image Accessibility Tool</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Progress bar styles -->
+    <style>
+        .image-upload-progress, .context-file-progress {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary, #f8f9fa);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bg-tertiary, #e9ecef);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color, #007bff), var(--secondary-color, #0056b3));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-message, .progress-percentage {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary, #666);
+        }
+        
+        .image-validation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--success-bg, #d4edda);
+            border: 1px solid var(--success-border, #c3e6cb);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .validation-icon {
+            font-size: 1.5rem;
+            color: var(--success-color, #155724);
+        }
+        
+        .validation-title {
+            margin: 0 0 0.25rem 0;
+            font-weight: 600;
+            color: var(--success-color, #155724);
+        }
+        
+        .validation-details {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--success-text, #155724);
+        }
+    </style>
     <!-- PDF.js for PDF text extraction -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
 </head>
 <body>
+    <!-- Skip link for keyboard users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header>
         <nav>
             <div class="container">
                 <div class="header-controls">
-                    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">🌙</button>
+                    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-pressed="false">🌙</button>
                 </div>
             </div>
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="hero">
             <div class="container">
-                <h2>Make Your Images Accessible</h2>
-                <p>Generate DSL-compliant alt text, figure descriptions, and transcriptions using institutional accessibility standards.</p>
+                <!-- Promote primary heading to h1 for proper document outline -->
+                <h1>Make Your Images Accessible</h1>
+                <p>Generate DSL-compliant alt text, figure descriptions, and transcribed text using institutional accessibility standards.</p>
                 <div class="cta-buttons">
                     <a href="#best-practices" class="btn btn-primary">Learn More</a>
                     <a href="#how-to-use" class="btn btn-secondary">Get Started</a>
@@ -77,15 +143,34 @@
                     
                     <div class="upload-section">
                         <label for="image-upload" class="upload-label">
-                            <div class="upload-area" id="upload-area">
-                                <div class="upload-icon">📷</div>
+                            <div class="upload-area" id="upload-area" role="group" aria-labelledby="upload-area-heading" aria-describedby="upload-area-help">
+                                <div class="upload-icon" aria-hidden="true">📷</div>
+                                <h4 id="upload-area-heading" class="visually-hidden">Image upload</h4>
                                 <p>Click to upload an image or drag and drop</p>
-                                <p class="upload-note">Supported formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
+                                <p class="upload-note" id="upload-area-help">Supported formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
                             </div>
                             <input type="file" id="image-upload" accept="image/*" style="display: none;">
                         </label>
                         
-                        <div id="image-preview" class="image-preview" style="display: none;"></div>
+                        <!-- Image upload progress bar -->
+                        <div id="image-upload-progress" class="image-upload-progress" style="display: none;" role="status" aria-live="polite">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="image-progress-fill"></div>
+                            </div>
+                            <p class="progress-message" id="image-progress-message">Processing image...</p>
+                            <p class="progress-percentage" id="image-progress-percentage">0%</p>
+                        </div>
+                        
+                        <!-- Image validation feedback -->
+                        <div id="image-validation" class="image-validation" style="display: none;" role="status" aria-live="polite">
+                            <div class="validation-icon">✓</div>
+                            <div class="validation-message">
+                                <p class="validation-title">Image ready for processing</p>
+                                <p class="validation-details" id="image-details"></p>
+                            </div>
+                        </div>
+                        
+                        <div id="image-preview" class="image-preview" style="display: none;" aria-live="polite"></div>
                     </div>
 
                     <div class="context-section">
@@ -95,15 +180,16 @@
                         <label class="context-file-heading">Upload Context Document (Optional)</label>
                         <div class="context-file-section">
                             <label for="context-file-upload" class="context-file-label">
-                                <div class="context-upload-area">
-                                    <div class="context-upload-icon">📄</div>
+                                <div class="context-upload-area" role="group" aria-labelledby="context-doc-heading" aria-describedby="context-doc-help">
+                                    <div class="context-upload-icon" aria-hidden="true">📄</div>
+                                    <h4 id="context-doc-heading" class="visually-hidden">Context document upload</h4>
                                     <p>Upload context document</p>
-                                    <p class="context-upload-note">PDF, Text, or Markdown files (max 5MB) - Only text content will be extracted, images within documents will not be processed</p>
+                                    <p class="context-upload-note" id="context-doc-help">PDF, Text, or Markdown (max 5MB). Text only is extracted.</p>
                                     <p class="context-upload-hint" style="font-size: 1.1em; font-weight: 600;">💡 Document will be used for all images until removed</p>
                                 </div>
                                 <input type="file" id="context-file-upload" accept=".txt,.md,.pdf" style="display: none;">
                             </label>
-                            <div id="context-file-progress" class="context-file-progress" style="display: none;">
+                            <div id="context-file-progress" class="context-file-progress" style="display: none;" role="status" aria-live="polite">
                                 <div class="progress-bar">
                                     <div class="progress-fill"></div>
                                 </div>
@@ -116,16 +202,44 @@
 
 
                     <div class="generate-section">
-                        <button id="generate-btn" class="btn btn-primary btn-large" disabled>Generate Descriptions</button>
+                        <div class="model-selection">
+                            <label for="model-select">AI Model Selection</label>
+                            <select id="model-select" class="model-dropdown">
+                                <option value="gpt-5" selected>GPT-5 (Latest - Best quality)</option>
+                                <option value="gpt-4o">GPT-4o (Excellent quality)</option>
+                                <option value="gpt-4o-mini">GPT-4o Mini (Faster, good quality)</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo (High quality)</option>
+                                <option value="gpt-4">GPT-4 (Standard quality)</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast, basic quality)</option>
+                            </select>
+                            <p class="model-description" id="model-description">
+                                Latest generation model with superior reasoning and image analysis capabilities for the most accurate accessibility descriptions.
+                            </p>
+                        </div>
+                        
+                        <button id="generate-btn" class="btn btn-primary btn-large" type="button" disabled aria-disabled="true">Generate Descriptions</button>
                     </div>
 
-                    <div id="loading-indicator" class="loading-indicator" style="display: none;">
+                    <div id="loading-indicator" class="loading-indicator" style="display: none;" role="status" aria-live="assertive">
                         <div class="spinner"></div>
                         <p>Generating accessibility descriptions...</p>
                     </div>
 
-                    <div id="error-container" class="error-container" style="display: none;"></div>
-                    <div id="results-container" class="results-container" style="display: none;"></div>
+                    <div id="error-container" class="error-container" style="display: none;" role="alert" aria-live="assertive">
+                        <div class="error-header">
+                            <div class="error-icon">⚠️</div>
+                            <h4 class="error-title">Processing Error</h4>
+                        </div>
+                        <div class="error-content">
+                            <p class="error-message" id="error-message"></p>
+                            <div class="error-suggestions" id="error-suggestions" style="display: none;">
+                                <h5>Suggestions to improve results:</h5>
+                                <ul id="error-suggestions-list"></ul>
+                            </div>
+                            <button type="button" class="btn btn-secondary retry-btn" id="retry-btn" style="display: none;">Try Again</button>
+                        </div>
+                    </div>
+                    <div id="results-container" class="results-container" style="display: none;" role="region" aria-label="Generated accessibility descriptions" aria-live="polite"></div>
                 </div>
 
 
@@ -242,11 +356,12 @@
         <div class="container">
             <p>&copy; 2025 Image Accessibility Tool. Open source project for DSL curriculum.</p>
             <p>Licensed under MIT License. Contributions welcome!</p>
+            <p class="version-info">Version: 2025-01-27 12:00 UTC | <span id="build-timestamp">Build: 2025-01-27T12:00:00Z</span></p>
         </div>
     </footer>
 
-    <!-- JavaScript -->
-    <script src="api.js"></script>
-    <script src="app.js"></script>
+    <!-- Defer local scripts -->
+    <script src="api.js" defer></script>
+    <script src="app.js" defer></script>
 </body>
 </html>
