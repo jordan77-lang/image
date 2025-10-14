@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const imageUpload = document.getElementById('image-upload');
     const contextInput = document.getElementById('context-input');
     const contextFileUpload = document.getElementById('context-file-upload');
-    const referenceFileUpload = document.getElementById('reference-file-upload');
+    const referenceFileUpload = document.getElementById('reference-file-upload'); // Optional element
     const generateBtn = document.getElementById('generate-btn');
     const resultsContainer = document.getElementById('results-container');
     const loadingIndicator = document.getElementById('loading-indicator');
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // State
     let currentImage = null;
     let contextFileContent = null;
-    let referenceDocuments = [];
+    let referenceDocuments = []; // For future reference file functionality
 
     // Event listeners
     if (imageUpload) {
@@ -34,12 +34,15 @@ document.addEventListener('DOMContentLoaded', function() {
         contextFileUpload.addEventListener('change', handleContextFileUpload);
     }
 
-    if (referenceFileUpload) {
-        referenceFileUpload.addEventListener('change', handleReferenceFileUpload);
-    }
+
 
     if (generateBtn) {
         generateBtn.addEventListener('click', handleGenerate);
+    }
+
+    // Optional reference file upload (if element exists in future versions)
+    if (referenceFileUpload) {
+        referenceFileUpload.addEventListener('change', handleReferenceFileUpload);
     }
 
     // Drag and drop functionality
@@ -525,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            showLoading(true);
+            showEnhancedLoading('Processing image... Generating accessibility descriptions');
             clearError();
             
             console.log('🚀 Starting generation with endpoint:', API_CONFIG.endpoint);

@@ -276,9 +276,9 @@ const UNIT_ABBREVS = [
   'mg','g','kg','µg','μg',
   'mL','L','cm3','cm^3','cc',
   'kPa','Pa','atm','bar','J','J/mol','kJ','kJ/mol',
-  'µS/cm','μS/cm','mS/cm','S/m','V','mV','A','mA',
-  'mm','cm','m','km','µm','μm','nm','Å',
-  '°C','C','K','s','min','h','ms','μs','µs','m s-1','m/s',
+  'µS/cm','μS/cm','mS/cm','S/m','V','mV','mA',
+  'mm','cm','km','µm','μm','nm','Å',
+  '°C','K','min','ms','μs','µs','m s-1','m/s',
   '%','ppm','ppb','ppt',
   'N','Pa s','W','Hz','mol','eq','g mol-1','kg m-3','kg/m3'
 ];
@@ -316,23 +316,19 @@ const EXPAND_MAP = {
   'S/m': 'siemens per meter',
   'V': 'volts',
   'mV': 'millivolts',
-  'A': 'amps',
   'mA': 'milliamps',
   'mm': 'millimeters',
   'cm': 'centimeters',
-  'm': 'meters',
   'km': 'kilometers',
   'µm': 'micrometers',
   'μm': 'micrometers',
   'nm': 'nanometers',
   'Å': 'angstroms',
   '°C': 'degrees Celsius',
-  'C': 'degrees Celsius',
   'K': 'kelvin',
-  's': 'seconds',
   'ms': 'milliseconds',
   'min': 'minutes',
-  'h': 'hours',
+
   '%': 'percent',
   'ppm': 'parts per million',
   'ppb': 'parts per billion',
@@ -360,10 +356,55 @@ function containsUnitAbbrev(text) {
 function expandUnitsInText(text) {
   if (!text) return text;
   let out = text;
+  
   Object.keys(EXPAND_MAP).forEach(abbr => {
     const safe = abbr.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    out = out.replace(new RegExp('\\b' + safe + '\\b', 'g'), EXPAND_MAP[abbr]);
+    
+    // Smart context-aware replacement to avoid false positives
+    const contextRegex = new RegExp('\\b' + safe + '\\b', 'g');
+    
+    out = out.replace(contextRegex, (match, offset, string) => {
+      const beforeContext = string.substring(Math.max(0, offset - 20), offset).toLowerCase();
+      const afterContext = string.substring(offset + match.length, Math.min(string.length, offset + match.length + 20)).toLowerCase();
+      
+      // Don't expand single letters that are clearly labels
+      if (match === 'A' && (beforeContext.includes('labeled') || beforeContext.includes('label') || afterContext.includes('labeled') || afterContext.includes('label'))) {
+        return match; // Keep as label
+      }
+      
+      if (match === 'C' && (beforeContext.includes('labeled') || beforeContext.includes('label') || afterContext.includes('labeled') || afterContext.includes('label') || beforeContext.includes('cuvette'))) {
+        return match; // Keep as label
+      }
+      
+      // Don't expand if it appears to be part of a word or abbreviation that's not a unit
+      if (match === 'A' && (beforeContext.includes('amp') || afterContext.includes('mp'))) {
+        return match; // Likely part of "amps" word being formed incorrectly
+      }
+      
+      // For numerical contexts, be more confident about unit expansion
+      if (/\d/.test(beforeContext) || /\d/.test(afterContext)) {
+        return EXPAND_MAP[abbr];
+      }
+      
+      // For temperature contexts with numbers, expand C
+      if (match === 'C' && /temperature|°|degrees?/i.test(beforeContext + afterContext)) {
+        return EXPAND_MAP[abbr];
+      }
+      
+      // Default: expand if it seems like a measurement context
+      if (/(pH|level|solution|concentration|volume|measurement)/i.test(beforeContext + afterContext)) {
+        return EXPAND_MAP[abbr];
+      }
+      
+      // Conservative: don't expand ambiguous single letters
+      if (match.length === 1) {
+        return match;
+      }
+      
+      return EXPAND_MAP[abbr];
+    });
   });
+  
   return out;
 }
 
@@ -688,7 +729,6 @@ Generate a concise alt text under 120 characters:`
       let figureDesc = figureMatch[1].trim();
       
       // ULTRA-COMPREHENSIVE figure numbering removal
-      console.log('Original figureDesc:', figureDesc); // Debug log
       
       // Handle your exact case: "Figure 1. The diagram illustrates..."
       figureDesc = figureDesc.replace(/^Figure\s+1\.\s+The\s+diagram\s+illustrates/gi, 'The diagram illustrates');
@@ -716,7 +756,7 @@ Generate a concise alt text under 120 characters:`
       // Remove standalone numbers with punctuation
       figureDesc = figureDesc.replace(/^\d+[\.\:\-]\s*/g, '');
       
-      console.log('Cleaned figureDesc:', figureDesc); // Debug log
+
       
       // FINAL NUCLEAR OPTION - Force removal of ANY remaining figure references
       // Handle exact case from user: "Figure 1. The ion drift tube diagram illustrates..."

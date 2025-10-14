@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Image Accessibility Tool - Generate alt text and long descriptions for images used in DSL curriculum">
     <meta name="theme-color" content="#111111">
-    <meta name="version" content="2025-01-27T12:00:00Z">
+    <meta name="version" content="1.1.0-2025-10-14">
     <title>Image Accessibility Tool</title>
     <link rel="stylesheet" href="styles.css">
     <!-- Progress bar styles -->
@@ -356,12 +356,23 @@
         <div class="container">
             <p>&copy; 2025 Image Accessibility Tool. Open source project for DSL curriculum.</p>
             <p>Licensed under MIT License. Contributions welcome!</p>
-            <p class="version-info">Version: 2025-01-27 12:00 UTC | <span id="build-timestamp">Build: 2025-01-27T12:00:00Z</span></p>
+            <p class="version-info">Version: 1.1.0 (October 2025) | <span id="build-timestamp">Enhanced with drag-and-drop & unit expansion</span></p>
         </div>
     </footer>
 
     <!-- Defer local scripts -->
     <script src="api.js" defer></script>
     <script src="app.js" defer></script>
+    
+    <!-- Update build timestamp -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buildTimestamp = document.getElementById('build-timestamp');
+            if (buildTimestamp) {
+                const now = new Date();
+                buildTimestamp.textContent = `Last loaded: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+            }
+        });
+    </script>
 </body>
 </html>

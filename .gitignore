@@ -34,3 +34,8 @@ env/
 
 # Local Netlify folder
 .netlify
+
+# Environment files (contain API keys)
+.env
+.env.local
+.env.*.local
