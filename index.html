@@ -356,7 +356,7 @@
         <div class="container">
             <p>&copy; 2025 Image Accessibility Tool. Open source project for DSL curriculum.</p>
             <p>Licensed under MIT License. Contributions welcome!</p>
-            <p class="version-info">Version: 1.1.0 (October 2025) | <span id="build-timestamp">Enhanced with drag-and-drop & unit expansion</span></p>
+            <p class="version-info">Version: 1.1.1 (October 2025) | <span id="build-timestamp">Enhanced with photograph handling & unit expansion</span></p>
         </div>
     </footer>
 
@@ -370,7 +370,7 @@
             const buildTimestamp = document.getElementById('build-timestamp');
             if (buildTimestamp) {
                 const now = new Date();
-                buildTimestamp.textContent = `Last loaded: ${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+                buildTimestamp.textContent = `Deployed: ${now.toISOString().split('T')[0]} | Last loaded: ${now.toLocaleTimeString()}`;
             }
         });
     </script>
