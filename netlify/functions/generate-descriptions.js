@@ -533,14 +533,14 @@ exports.handler = async (event, context) => {
     
     if (imageType === 'PHOTOGRAPH') {
       specificPrompt = `
-2. **Figure Description**: Write a clear, educational description explaining what is shown and its relevance:
-   - Start with what is depicted in the image
-   - Explain the educational or contextual significance
-   - Focus on observable details that support learning objectives
-   - Use accessible, descriptive language
+2. **Figure Description**: Write a natural, descriptive explanation of what is shown in the photograph:
+   - Describe the main subjects, objects, or scene depicted
+   - Include relevant details about setting, context, or atmosphere
+   - Mention notable visual elements, colors, lighting, or composition
+   - Use clear, accessible language that helps readers visualize the scene
+   - Focus on what makes the image interesting or noteworthy
    
-   AVOID scientific jargon unless the image contains scientific content
-   Focus on clear, educational description rather than technical analysis`;
+   Write as if describing the photo to someone who cannot see it, emphasizing what is visually important or meaningful about the scene.`;
     } else {
       specificPrompt = `
 2. **Figure Description**: Write INTERPRETIVE descriptions that explain scientific meaning.
@@ -558,7 +558,11 @@ exports.handler = async (event, context) => {
     }
 
     // Create comprehensive prompt for all four sections
-    const prompt = `You are an expert in creating accessible educational content for Dreamscape Learn curriculum. Generate accessibility content for this image following our institutional standards.
+    const systemRole = imageType === 'PHOTOGRAPH' 
+      ? 'You are an expert in creating accessible image descriptions for general photographs and visual content.'
+      : 'You are an expert in creating accessible educational content for Dreamscape Learn curriculum.';
+    
+    const prompt = `${systemRole} Generate accessibility content for this image following accessibility best practices.
 
 IMAGE TYPE DETECTED: ${imageType}
 
@@ -572,22 +576,16 @@ Generate exactly four sections:
 1. **Alt Text** (120 characters max): Brief description for screen readers
 ${specificPrompt}
 3. **Long Description**: Comprehensive description starting with "This image is a..."
-4. **Transcribed Text**: EXACT LITERAL TRANSCRIPTION of all visible text:
-   - Write each piece of text EXACTLY as it appears
-   - If you see "10, 11, 12, 13, 14" write that, NOT "10 to 14"
-   - List every axis tick mark, data label, number individually
-   - Include all titles, legends, captions word-for-word
-   - Use line breaks to organize different text elements
-   - DO NOT summarize, interpret, or create ranges
-   - If no text is visible, write "No text visible in image"
+4. **Transcribed Text**: ${imageType === 'PHOTOGRAPH' ? 
+      'EXACT transcription of any visible text in the image (signs, labels, captions, etc.):\n   - Write text exactly as it appears\n   - Include all readable words, numbers, or symbols\n   - If no text is visible, write "No text visible in image"' :
+      'EXACT LITERAL TRANSCRIPTION of all visible text:\n   - Write each piece of text EXACTLY as it appears\n   - If you see "10, 11, 12, 13, 14" write that, NOT "10 to 14"\n   - List every axis tick mark, data label, number individually\n   - Include all titles, legends, captions word-for-word\n   - Use line breaks to organize different text elements\n   - DO NOT summarize, interpret, or create ranges\n   - If no text is visible, write "No text visible in image"'}
 
 CRITICAL ACCESSIBILITY REQUIREMENTS:
-- For Alt Text and Long Description: NEVER use unit abbreviations (e.g., use "milligrams per liter" not "mg/L", use "degrees Celsius" not "°C", use "percent" not "%")
-- For Long Description: Always spell out all units completely for screen reader accessibility
-- For Figure Description: Always spell out all units completely for screen reader accessibility  
-- For Transcribed Text: Preserve exact text as shown (including abbreviations if present in original)
-- Use "to" instead of hyphens for ranges (e.g., "5 to 10" not "5-10")
+${imageType === 'PHOTOGRAPH' ? 
+  '- Use clear, descriptive language that helps screen readers understand the visual content\n- Spell out numbers and measurements when relevant\n- Use "to" instead of hyphens for ranges (e.g., "5 to 10" not "5-10")' :
+  '- For Alt Text and Long Description: NEVER use unit abbreviations (e.g., use "milligrams per liter" not "mg/L", use "degrees Celsius" not "°C", use "percent" not "%")\n- For Long Description: Always spell out all units completely for screen reader accessibility\n- For Figure Description: Always spell out all units completely for screen reader accessibility\n- For Transcribed Text: Preserve exact text as shown (including abbreviations if present in original)\n- Use "to" instead of hyphens for ranges (e.g., "5 to 10" not "5-10")'}
 
+${imageType !== 'PHOTOGRAPH' ? `
 🚨 TRANSCRIBED TEXT REQUIREMENTS 🚨
 
 CRITICAL: Transcribed Text must be EXACT transcription, NOT interpretation or summarization!
@@ -603,7 +601,7 @@ MANDATORY Rules:
 - If axis shows "0, 5, 10, 15, 20" write exactly that, not "0 to 20"
 
 TRANSCRIPTION EXAMPLES:
-✅ CORRECT: "Hatching success (percent)\n0\n10\n20\n30\n40\n50"
+✅ CORRECT: "Hatching success (percent)\\n0\\n10\\n20\\n30\\n40\\n50"
 ❌ WRONG: "Hatching success (percent) 0 to 50"
 ✅ CORRECT: "Temperature: 10°C, 15°C, 20°C, 25°C"  
 ❌ WRONG: "Temperature: 10 to 25°C"
@@ -635,10 +633,13 @@ EXAMPLES:
 - Spectrum: Instead of: "Figure 1. The ion mobility spectrum shows peaks at drift times of 1.2, 1.5, and 3.8 milliseconds."
   WRITE: "Ion mobility spectrum showing multiple compounds with peaks at drift times of 1.2 ms, 1.5 ms, and 3.8 ms. By comparing these values to reference data, the peaks correspond to methanol, ethanol, and n-heptane respectively. The tallest peak at 1.5 ms indicates ethanol is the most abundant compound in the sample."
 
-- Diagram: Instead of: "The diagram illustrates how ions move through a drift tube in an ion mobility spectrometer. Different ions separate based on size, mass, and charge due to the drift gas, allowing for identification."
+- Diagram: Instead of: "The diagram illustrates how ions move through a drift tube in an ion mobility spectrometer. Different ions separate based to size, mass, and charge due to the drift gas, allowing for identification."
   WRITE: "Ion mobility spectrometry separates ions according to how quickly they drift through a gas-filled tube under an electric field. Lighter or more compact ions move faster and reach the detector sooner than larger or more extended ones. This principle enables scientists to identify compounds based on their characteristic drift times."
 
-Follow all standards exactly as specified in the reference materials above.`;
+Follow all standards exactly as specified in the reference materials above.` : ''}
+
+${imageType === 'PHOTOGRAPH' ? `
+Focus on creating natural, descriptive content that helps users understand and visualize the photograph clearly.` : ''}`;
 
     const client = getClient();
     const response = await client.chat.completions.create({
