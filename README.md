@@ -70,14 +70,15 @@ Designed specifically for **DSL curriculum materials** with:
 ### **Project Structure**
 ```
 ├── index.html                      # Main application interface
-├── styles.css                      # Enhanced UI with dark mode
-├── app.js                          # Application logic & UI handlers
-├── api.js                          # API integration layer
+├── styles.css                      # Enhanced UI with dark mode & drag-drop
+├── app.js                          # Frontend application logic
 ├── netlify/functions/
-│   ├── generate-descriptions.js    # Main AI processing function
-│   ├── generate-descriptions-health.js  # System monitoring
-│   └── permanent-references.js    # Institutional standards
-├── dreamscape-accessibility-standards.txt
+│   ├── generate-descriptions.js    # Main AI processing (OpenAI GPT-4o Vision)
+│   ├── generate-descriptions-health.js  # Health monitoring endpoint
+│   ├── permanent-references.js    # Institutional standards API
+│   └── lib/
+│       └── reference-storage.js   # Reference document storage
+├── dreamscape-accessibility-standards.txt  # Core accessibility guidelines
 ├── figure-legends-guide.txt
 └── package.json                    # Dependencies & configuration
 ```
