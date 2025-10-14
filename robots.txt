@@ -1,0 +1,29 @@
+# Image Accessibility Tool - Robots.txt
+# Allow search engines to discover and index the main application
+
+User-agent: *
+
+# Allow main pages
+Allow: /
+Allow: /index.html
+Allow: /*.css
+Allow: /*.js
+
+# Block API endpoints and functions
+Disallow: /.netlify/
+Disallow: /netlify/
+Disallow: /api/
+Disallow: /.env
+Disallow: /node_modules/
+Disallow: /.git/
+
+# Block temporary and config files
+Disallow: /*.log
+Disallow: /*.tmp
+Disallow: /tmp/
+
+# Optional: Specify sitemap location (if you create one later)
+# Sitemap: https://image-accessibility-tool.netlify.app/sitemap.xml
+
+# Crawl delay (optional - helps prevent server overload)
+Crawl-delay: 1

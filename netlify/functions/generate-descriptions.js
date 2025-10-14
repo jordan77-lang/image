@@ -268,6 +268,145 @@ function getClient() {
   return openai;
 }
 
+// ====================== UNIT EXPANSION SYSTEM ======================
+// Comprehensive unit abbreviation detection and expansion for accessibility
+
+const UNIT_ABBREVS = [
+  'mg/L','µg/L','μg/L','g/L','mol/L','mmol/L','M','mM','mol kg-1',
+  'mg','g','kg','µg','μg',
+  'mL','L','cm3','cm^3','cc',
+  'kPa','Pa','atm','bar','J','J/mol','kJ','kJ/mol',
+  'µS/cm','μS/cm','mS/cm','S/m','V','mV','A','mA',
+  'mm','cm','m','km','µm','μm','nm','Å',
+  '°C','C','K','s','min','h','ms','μs','µs','m s-1','m/s',
+  '%','ppm','ppb','ppt',
+  'N','Pa s','W','Hz','mol','eq','g mol-1','kg m-3','kg/m3'
+];
+
+const EXPAND_MAP = {
+  'mg/L': 'milligrams per liter',
+  'µg/L': 'micrograms per liter',
+  'μg/L': 'micrograms per liter',
+  'g/L': 'grams per liter',
+  'mol/L': 'moles per liter',
+  'mmol/L': 'millimoles per liter',
+  'M': 'molar',
+  'mM': 'millimolar',
+  'mg': 'milligrams',
+  'g': 'grams',
+  'kg': 'kilograms',
+  'µg': 'micrograms',
+  'μg': 'micrograms',
+  'mL': 'milliliters',
+  'L': 'liters',
+  'cm3': 'cubic centimeters',
+  'cm^3': 'cubic centimeters',
+  'cc': 'cubic centimeters',
+  'kPa': 'kilopascals',
+  'Pa': 'pascals',
+  'atm': 'atmospheres',
+  'bar': 'bar',
+  'J': 'joules',
+  'J/mol': 'joules per mole',
+  'kJ': 'kilojoules',
+  'kJ/mol': 'kilojoules per mole',
+  'µS/cm': 'microsiemens per centimeter',
+  'μS/cm': 'microsiemens per centimeter',
+  'mS/cm': 'millisiemens per centimeter',
+  'S/m': 'siemens per meter',
+  'V': 'volts',
+  'mV': 'millivolts',
+  'A': 'amps',
+  'mA': 'milliamps',
+  'mm': 'millimeters',
+  'cm': 'centimeters',
+  'm': 'meters',
+  'km': 'kilometers',
+  'µm': 'micrometers',
+  'μm': 'micrometers',
+  'nm': 'nanometers',
+  'Å': 'angstroms',
+  '°C': 'degrees Celsius',
+  'C': 'degrees Celsius',
+  'K': 'kelvin',
+  's': 'seconds',
+  'ms': 'milliseconds',
+  'min': 'minutes',
+  'h': 'hours',
+  '%': 'percent',
+  'ppm': 'parts per million',
+  'ppb': 'parts per billion',
+  'ppt': 'parts per trillion',
+  'N': 'newtons',
+  'W': 'watts',
+  'Hz': 'hertz',
+  'g mol-1': 'grams per mole',
+  'kg m-3': 'kilograms per cubic meter',
+  'kg/m3': 'kilograms per cubic meter',
+  'm s-1': 'meters per second',
+  'm/s': 'meters per second'
+};
+
+function normalizeTextForMatch(text) {
+  return (text || '').replace(/\u00A0/g,' ').toLowerCase();
+}
+
+function containsUnitAbbrev(text) {
+  if (!text) return false;
+  const t = normalizeTextForMatch(text);
+  return UNIT_ABBREVS.some(u => t.includes(u.toLowerCase()));
+}
+
+function expandUnitsInText(text) {
+  if (!text) return text;
+  let out = text;
+  Object.keys(EXPAND_MAP).forEach(abbr => {
+    const safe = abbr.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    out = out.replace(new RegExp('\\b' + safe + '\\b', 'g'), EXPAND_MAP[abbr]);
+  });
+  return out;
+}
+
+function likelyHasUnknownAbbrev(text) {
+  if (!text) return false;
+  const t = normalizeTextForMatch(text);
+  if (containsUnitAbbrev(t)) return false;
+  // Look for abbreviation-like patterns containing / ° % or unit-like characteristics
+  return /[a-z\u00B5\u03BC]{1,4}([\/\^°%]|\-)?[a-z0-9\/\^°%]{0,8}/i.test(t) && /[\/°%]/.test(t);
+}
+
+async function askModelForExpansion(client, finalImageData, suspectSnippet) {
+  try {
+    const instruction = `You are a careful accessibility assistant. A figure or caption contains the snippet: "${suspectSnippet}".
+Provide a short, conservative expansion for the unit/abbreviation found suitable for screen-reader friendly alt text.
+If confident the abbreviation is a standard unit, return only the expansion (for example, "kilopascals"). If not confident, return "UNKNOWN". Do not add extra commentary.`;
+    
+    const resp = await client.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { 
+          role: 'user', 
+          content: [
+            { type: 'text', text: instruction },
+            { type: 'image_url', image_url: { url: finalImageData } }
+          ]
+        }
+      ],
+      max_tokens: 40,
+      temperature: 0.0
+    });
+    
+    const text = (resp.choices[0].message.content || '').trim();
+    if (!text) return { success: false, suggestion: null };
+    if (text.toUpperCase() === 'UNKNOWN') return { success: false, suggestion: null };
+    return { success: true, suggestion: text };
+  } catch (err) {
+    console.error('askModelForExpansion error', err);
+    return { success: false, suggestion: null };
+  }
+}
+// ====================== END UNIT EXPANSION SYSTEM ======================
+
 exports.handler = async (event, context) => {
   console.log('🚨 FUNCTION CALLED - Figure numbering prevention ACTIVE v2.0');
   console.log('Deployment timestamp:', new Date().toISOString());
@@ -618,6 +757,116 @@ Generate a concise alt text under 120 characters:`
       console.log('Extracted transcribed text length:', transcribedText.length);
     }
 
+    // ====================== UNIT EXPANSION & QA SYSTEM ======================
+    console.log('🔧 Starting unit expansion and QA processing...');
+    
+    // Initialize QA metadata
+    sections._meta = sections._meta || {};
+    if (sections.altText) sections._meta.originalAltText = sections.altText;
+    if (sections.longDescription) sections._meta.originalLongDescription = sections.longDescription;
+    if (sections.figureDescription) sections._meta.originalFigureDescription = sections.figureDescription;
+
+    // Initialize QA flags
+    sections.altTextAutoFixed = false;
+    sections.longDescriptionAutoFixed = false;
+    sections.figureDescriptionNeedsReview = false;
+    sections.unknownAbbrevDetected = false;
+    sections.unknownAbbrevSuggestions = [];
+    sections.altTextNeedsReview = false;
+    sections.longDescriptionNeedsReview = false;
+
+    // Process ALT TEXT - Must expand all units for accessibility
+    if (sections.altText) {
+      console.log('🔍 Processing alt text for unit expansion...');
+      
+      if (containsUnitAbbrev(sections.altText)) {
+        const before = sections.altText;
+        sections.altText = expandUnitsInText(sections.altText);
+        sections.altTextAutoFixed = (sections.altText !== before);
+        console.log('✅ Alt text auto-expanded known units.');
+      }
+      
+      if (likelyHasUnknownAbbrev(sections.altText)) {
+        sections.unknownAbbrevDetected = true;
+        const suspectSnippet = sections.altText.match(/([A-Za-z\u00B5\u03BC]{1,4}[\/\^°%]?[A-Za-z0-9\/\^°%]{0,8})/i);
+        const snippet = suspectSnippet ? suspectSnippet[0] : null;
+        
+        if (snippet) {
+          console.log('🤖 Asking AI to expand unknown abbreviation:', snippet);
+          const suggestionObj = await askModelForExpansion(getClient(), finalImageData, snippet);
+          
+          if (suggestionObj.success && suggestionObj.suggestion) {
+            const expanded = sections.altText.replace(new RegExp(snippet.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'), suggestionObj.suggestion);
+            sections.altText = expanded;
+            sections.altTextAutoFixed = true;
+            sections.unknownAbbrevSuggestions.push({ snippet, suggestion: suggestionObj.suggestion });
+            console.log('✅ Alt text: applied AI-suggested expansion for unknown abbrev:', snippet, '→', suggestionObj.suggestion);
+          } else {
+            sections.altTextNeedsReview = true;
+            sections.unknownAbbrevSuggestions.push({ snippet, suggestion: null });
+            console.log('⚠️ Alt text: unknown abbreviation detected, flagged for review:', snippet);
+          }
+        }
+      }
+    }
+
+    // Process LONG DESCRIPTION - Must expand all units for accessibility
+    if (sections.longDescription) {
+      console.log('🔍 Processing long description for unit expansion...');
+      
+      if (containsUnitAbbrev(sections.longDescription)) {
+        const before = sections.longDescription;
+        sections.longDescription = expandUnitsInText(sections.longDescription);
+        sections.longDescriptionAutoFixed = (sections.longDescription !== before);
+        console.log('✅ Long description auto-expanded known units.');
+      }
+      
+      if (likelyHasUnknownAbbrev(sections.longDescription)) {
+        sections.unknownAbbrevDetected = true;
+        const suspectSnippet = sections.longDescription.match(/([A-Za-z\u00B5\u03BC]{1,4}[\/\^°%]?[A-Za-z0-9\/\^°%]{0,8})/i);
+        const snippet = suspectSnippet ? suspectSnippet[0] : null;
+        
+        if (snippet) {
+          console.log('🤖 Asking AI to expand unknown abbreviation in long desc:', snippet);
+          const suggestionObj = await askModelForExpansion(getClient(), finalImageData, snippet);
+          
+          if (suggestionObj.success && suggestionObj.suggestion) {
+            const expanded = sections.longDescription.replace(new RegExp(snippet.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'), suggestionObj.suggestion);
+            sections.longDescription = expanded;
+            sections.longDescriptionAutoFixed = true;
+            sections.unknownAbbrevSuggestions.push({ snippet, suggestion: suggestionObj.suggestion });
+            console.log('✅ Long description: applied AI-suggested expansion for unknown abbrev:', snippet, '→', suggestionObj.suggestion);
+          } else {
+            sections.longDescriptionNeedsReview = true;
+            sections.unknownAbbrevSuggestions.push({ snippet, suggestion: null });
+            console.log('⚠️ Long description: unknown abbreviation detected, flagged for review:', snippet);
+          }
+        }
+      }
+    }
+
+    // Process FIGURE DESCRIPTION - Flag for review if contains abbreviations (hybrid approach)
+    if (sections.figureDescription) {
+      console.log('🔍 Checking figure description for abbreviations...');
+      
+      if (containsUnitAbbrev(sections.figureDescription) || likelyHasUnknownAbbrev(sections.figureDescription)) {
+        sections.figureDescriptionNeedsReview = true;
+        console.log('📝 Figure description contains abbreviation(s); flagged for editorial review.');
+      }
+    }
+
+    // TRANSCRIBED TEXT remains verbatim (no unit expansion)
+    sections.transcribedTextVerbatim = true;
+
+    // Final QA checks
+    sections.altTextTooLong = sections.altText ? (sections.altText.length > 120) : false;
+    if (sections.altTextTooLong) {
+      console.warn('⚠️ Alt text longer than 120 chars after expansion; may need regeneration or manual editing.');
+    }
+
+    console.log('✅ Unit expansion and QA processing complete!');
+    // ====================== END UNIT EXPANSION & QA SYSTEM ======================
+
     // Calculate character counts
     const counts = {
       altText: sections.altText ? sections.altText.length : 0,
@@ -637,6 +886,21 @@ Generate a concise alt text under 120 characters:`
         transcribedText: sections.transcribedText,
         sections,
         counts,
+        // QA Flags and Metadata
+        flags: {
+          altTextAutoFixed: !!sections.altTextAutoFixed,
+          longDescriptionAutoFixed: !!sections.longDescriptionAutoFixed,
+          figureDescriptionNeedsReview: !!sections.figureDescriptionNeedsReview,
+          transcribedTextVerbatim: !!sections.transcribedTextVerbatim,
+          altTextTooLong: !!sections.altTextTooLong,
+          altTextNeedsReview: !!sections.altTextNeedsReview,
+          longDescriptionNeedsReview: !!sections.longDescriptionNeedsReview,
+          unknownAbbrevDetected: !!sections.unknownAbbrevDetected
+        },
+        unitExpansion: {
+          suggestions: sections.unknownAbbrevSuggestions || [],
+          originalTexts: sections._meta || {}
+        },
         rawResponse: result
       }),
     };

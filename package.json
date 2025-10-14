@@ -1,7 +1,7 @@
 {
   "name": "image-accessibility-netlify",
-  "version": "1.0.0",
-  "description": "Netlify functions for image accessibility descriptions using OpenAI",
+  "version": "1.1.0",
+  "description": "Advanced image accessibility tool with drag-and-drop, unit expansion, and AI-powered descriptions",
   "main": "netlify/functions/generate-descriptions.js",
   "scripts": {
     "build": "echo 'No build step needed'",

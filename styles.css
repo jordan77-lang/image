@@ -443,6 +443,13 @@ button:focus,
     background: #f0f9ff;
 }
 
+.upload-area.drag-over {
+    border-color: var(--primary-color);
+    background: #e0f2fe;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 123, 191, 0.15);
+}
+
 .upload-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
@@ -543,6 +550,13 @@ button:focus,
 .context-upload-area:hover {
     border-color: var(--primary-color);
     background-color: rgba(37, 99, 235, 0.1);
+}
+
+.context-upload-area.drag-over {
+    border-color: var(--primary-color);
+    background: #e0f2fe;
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 123, 191, 0.15);
 }
 
 .context-upload-icon {
@@ -1080,6 +1094,18 @@ body.dark-mode {
 
 .dark-mode .hero {
     background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+}
+
+body.dark-mode .upload-area.drag-over {
+    background: #1e3a5f;
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
+}
+
+body.dark-mode .context-upload-area.drag-over {
+    background: #1e3a5f;
+    border-color: var(--primary-color);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25);
 }
 
 /* Header Controls */

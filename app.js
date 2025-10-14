@@ -42,6 +42,153 @@ document.addEventListener('DOMContentLoaded', function() {
         generateBtn.addEventListener('click', handleGenerate);
     }
 
+    // Drag and drop functionality
+    const uploadArea = document.getElementById('upload-area');
+    if (uploadArea) {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        uploadArea.addEventListener('drop', handleDrop, false);
+    }
+
+    // Drag and drop helper functions
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight(e) {
+        const uploadArea = document.getElementById('upload-area');
+        if (uploadArea) {
+            uploadArea.classList.add('drag-over');
+        }
+    }
+
+    function unhighlight(e) {
+        const uploadArea = document.getElementById('upload-area');
+        if (uploadArea) {
+            uploadArea.classList.remove('drag-over');
+        }
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files && files.length > 0) {
+            const file = files[0];
+            
+            // Validate it's an image file
+            if (file.type.startsWith('image/')) {
+                // Update the file input and trigger the upload
+                const fileInput = document.getElementById('image-upload');
+                if (fileInput) {
+                    try {
+                        // Create a new FileList-like object
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                        
+                        // Trigger the handleImageUpload function directly
+                        handleImageUpload({ target: { files: [file] } });
+                    } catch (error) {
+                        console.error('Error with DataTransfer:', error);
+                        // Fallback: call handleImageUpload directly
+                        handleImageUpload({ target: { files: [file] } });
+                    }
+                }
+            } else {
+                // Show error for non-image files
+                showError('Please drop an image file (JPEG, PNG, GIF, WebP)');
+            }
+        }
+    }
+
+    // Drag and drop functionality for context upload
+    const contextUploadArea = document.querySelector('.context-upload-area');
+    if (contextUploadArea) {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            contextUploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            contextUploadArea.addEventListener(eventName, highlightContext, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            contextUploadArea.addEventListener(eventName, unhighlightContext, false);
+        });
+
+        // Handle dropped files
+        contextUploadArea.addEventListener('drop', handleContextDrop, false);
+    }
+
+    // Context drag and drop helper functions
+    function highlightContext(e) {
+        const contextUploadArea = document.querySelector('.context-upload-area');
+        if (contextUploadArea) {
+            contextUploadArea.classList.add('drag-over');
+        }
+    }
+
+    function unhighlightContext(e) {
+        const contextUploadArea = document.querySelector('.context-upload-area');
+        if (contextUploadArea) {
+            contextUploadArea.classList.remove('drag-over');
+        }
+    }
+
+    function handleContextDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files && files.length > 0) {
+            const file = files[0];
+            
+            // Validate it's a supported context file
+            const supportedTypes = ['.txt', '.md', '.pdf'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (supportedTypes.includes(fileExtension) || file.type === 'text/plain' || file.type === 'application/pdf') {
+                // Update the file input and trigger the upload
+                const fileInput = document.getElementById('context-file-upload');
+                if (fileInput) {
+                    try {
+                        // Create a new FileList-like object
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(file);
+                        fileInput.files = dataTransfer.files;
+                        
+                        // Trigger the handleContextFileUpload function
+                        handleContextFileUpload({ target: { files: [file] } });
+                    } catch (error) {
+                        console.error('Error with DataTransfer:', error);
+                        // Fallback: call handleContextFileUpload directly
+                        handleContextFileUpload({ target: { files: [file] } });
+                    }
+                }
+            } else {
+                // Show error for unsupported files
+                showError('Please drop a supported context file (PDF, TXT, or MD)');
+            }
+        }
+    }
+
     // Handle image upload
     async function handleImageUpload(event) {
         const file = event.target.files[0];
