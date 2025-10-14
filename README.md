@@ -1,8 +1,8 @@
-# 🎯 DSL Image Accessibility Tool
+# 🎯 Educational Image Accessibility Tool
 
 > **Professional AI-powered accessibility content generation for educational materials**
 
-Generate DSL-compliant alt text, figure descriptions, long descriptions, and transcriptions using institutional accessibility standards and scientific writing best practices.
+Generate accessibility-compliant alt text, figure descriptions, long descriptions, and transcriptions using educational accessibility standards and scientific writing best practices.
 
 ## 🌐 Live Application
 
@@ -26,7 +26,7 @@ Generate DSL-compliant alt text, figure descriptions, long descriptions, and tra
 - **Responsive Design** for all device sizes
 
 ### 🏛️ **Institutional Standards**
-- **DSL Accessibility Compliance** built-in
+- **Educational Accessibility Compliance** built-in
 - **WCAG Guidelines** automatically enforced
 - **Scientific Writing Standards** (Douglas Kroodsma methodology)
 - **Figure Numbering Prevention** (automatic removal)
@@ -47,7 +47,7 @@ Generate DSL-compliant alt text, figure descriptions, long descriptions, and tra
 
 ## 🎓 Educational Focus
 
-Designed specifically for **DSL curriculum materials** with:
+Designed specifically for **educational curriculum materials** with:
 - **Scientific accuracy** in figure descriptions
 - **Educational context** awareness
 - **Interpretive writing** (not just visual description)
@@ -59,7 +59,7 @@ Designed specifically for **DSL curriculum materials** with:
 - **Frontend**: GitHub Pages (static hosting)
 - **Backend**: Netlify Functions (serverless AI processing)
 - **API**: OpenAI GPT-4o Vision model
-- **Standards**: Built-in DSL accessibility guidelines
+- **Standards**: Built-in educational accessibility guidelines
 
 ### **Core Technologies**
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
@@ -78,7 +78,7 @@ Designed specifically for **DSL curriculum materials** with:
 │   ├── permanent-references.js    # Institutional standards API
 │   └── lib/
 │       └── reference-storage.js   # Reference document storage
-├── dreamscape-accessibility-standards.txt  # Core accessibility guidelines
+├── educational-accessibility-standards.txt  # Core accessibility guidelines
 ├── figure-legends-guide.txt
 └── package.json                    # Dependencies & configuration
 ```
@@ -133,7 +133,7 @@ MIT License - See [LICENSE](LICENSE) file for details.
 
 ## 🤝 Acknowledgments
 
-Built for **Dreamscape Learn (DSL)** curriculum accessibility compliance.  
+Built for educational curriculum accessibility compliance.  
 Implements **Douglas Kroodsma's** figure legend methodology for scientific education.
 
 ---

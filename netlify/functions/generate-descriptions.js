@@ -1,9 +1,9 @@
 const { OpenAI } = require('openai');
 
-// Built-in reference materials for Dreamscape Learn standards
-const DREAMSCAPE_STANDARDS = `DREAMSCAPE LEARN ACCESSIBILITY STANDARDS
+// Built-in reference materials for educational accessibility standards
+const EDUCATIONAL_STANDARDS = `EDUCATIONAL ACCESSIBILITY STANDARDS
 
-This document provides institutional standards for creating accessible image content that aligns with Dreamscape Learn curriculum requirements.
+This document provides standards for creating accessible image content that aligns with educational accessibility requirements.
 
 === ALT TEXT STANDARDS ===
 
@@ -149,9 +149,9 @@ Guiding Principles:
 • Be self-contained - Make sense on its own
 • Interpret, don't narrate - Describe what data mean, not shapes/colors
 
-=== DSL WRITING AND COPYEDIT GUIDELINES ===
+=== EDUCATIONAL WRITING AND COPYEDIT GUIDELINES ===
 
-Based on Dreamscape Learn Writing and Copyedit Guidelines v4.15.252:
+Based on established educational writing and copyedit standards:
 
 Language Standards:
 - Use clear, concise, and accessible language appropriate for educational content
@@ -174,48 +174,48 @@ Educational Content Standards:
 Formatting and Style:
 - Use sentence case for headings and labels
 - Maintain consistent punctuation and capitalization
-- Follow DSL's preferred spelling and usage conventions
+- Follow standard educational spelling and usage conventions
 - Ensure all text meets accessibility readability standards
 
 Quality Assurance:
 - Review all content for accuracy and clarity
-- Verify consistency with DSL brand and voice guidelines
+- Maintain consistency with educational content standards
 - Check that descriptions serve educational purposes effectively
 - Ensure compliance with institutional accessibility standards
 
-=== DSL STYLE GUIDE V2 STANDARDS ===
+=== EDUCATIONAL STYLE GUIDE STANDARDS ===
 
-Based on Dreamscape Learn Style Guide V2 - Complete brand and style requirements:
+Based on educational accessibility style guide requirements:
 
 Voice and Tone:
 - Maintain professional yet approachable tone in all descriptions
 - Use authoritative but accessible language appropriate for educational content
-- Ensure consistency with DSL's established brand voice across all materials
+- Ensure consistency with established educational accessibility standards
 - Balance technical accuracy with readability for diverse learner audiences
 
 Terminology and Usage:
-- Follow DSL's preferred terminology for scientific and educational concepts
+- Follow standard terminology for scientific and educational concepts
 - Use consistent capitalization for proper nouns and technical terms
-- Apply DSL's specific style preferences for common educational phrases
+- Apply established style preferences for common educational phrases
 - Maintain uniformity in how measurements, data, and statistics are presented
 
 Content Structure and Organization:
-- Follow DSL's hierarchical information presentation standards
+- Follow clear hierarchical information presentation standards
 - Use consistent formatting for similar types of content across descriptions
-- Apply DSL's preferred approach to introducing and explaining complex concepts
-- Ensure logical flow that supports DSL's pedagogical methodology
+- Apply proven approaches to introducing and explaining complex concepts
+- Ensure logical flow that supports effective pedagogical methodology
 
-Brand Consistency Requirements:
-- Align all accessibility content with DSL's educational philosophy
-- Use language that reflects DSL's commitment to inclusive learning
-- Maintain consistency with DSL's approach to scientific communication
-- Ensure descriptions support DSL's overall curriculum objectives
+Accessibility Philosophy:
+- Align all content with inclusive educational principles
+- Use language that reflects commitment to accessible learning
+- Maintain consistency with clear scientific communication standards
+- Ensure descriptions support diverse curriculum objectives
 
 Visual Content Guidelines:
-- Follow DSL's standards for describing charts, graphs, and data visualizations
-- Use DSL's preferred approaches for explaining visual relationships
+- Follow established standards for describing charts, graphs, and data visualizations
+- Use proven approaches for explaining visual relationships
 - Apply consistent methodology for describing scientific illustrations
-- Maintain DSL's standards for technical diagram explanations
+- Maintain clear standards for technical diagram explanations
 
 Accessibility Integration:
 - Ensure all descriptions meet DSL's accessibility compliance requirements
@@ -491,7 +491,7 @@ exports.handler = async (event, context) => {
     }
 
     // Combine built-in standards with any additional reference document
-    let combinedReferences = DREAMSCAPE_STANDARDS;
+    let combinedReferences = EDUCATIONAL_STANDARDS;
     if (referenceDocument && referenceDocument.trim()) {
       combinedReferences += '\n\n=== ADDITIONAL CONTEXT ===\n\n' + referenceDocument;
     }

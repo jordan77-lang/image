@@ -1,6 +1,6 @@
-DREAMSCAPE LEARN ACCESSIBILITY STANDARDS
+EDUCATIONAL ACCESSIBILITY STANDARDS
 
-This document provides institutional standards for creating accessible image content that aligns with Dreamscape Learn curriculum requirements.
+This document provides standards for creating accessible image content that aligns with educational curriculum requirements.
 
 === ALT TEXT STANDARDS ===
 
