@@ -211,7 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Validate the image file
-            ImageProcessor.validateImageFile(file);
+            if (!file.type.startsWith('image/')) {
+                throw new Error('Please select a valid image file (JPEG, PNG, GIF, WebP)');
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB limit
+                throw new Error('File size too large. Please select an image under 10MB.');
+            }
             
             // Update progress
             if (progressIndicator) {
@@ -221,7 +226,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Convert to base64
-            currentImage = await ImageProcessor.fileToBase64(file);
+            currentImage = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
             
             // Update progress
             if (progressIndicator) {
