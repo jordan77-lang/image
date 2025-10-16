@@ -1,5 +1,7 @@
 // Main application logic for the accessibility tool
+console.log('🚀 App.js loading...');
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM loaded, initializing app...');
     // Configuration - Auto-detect local vs production
     const API_CONFIG = {
         endpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
