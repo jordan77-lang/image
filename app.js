@@ -5,10 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
         endpoint: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
             ? 'http://localhost:8888/.netlify/functions' // Local Netlify Dev
             : 'https://image-accessibility-tool.netlify.app/.netlify/functions', // Production
-        apiKey: null // API key is handled server-side for security
     };
-
-    const api = new AccessibilityAPI(API_CONFIG.endpoint, API_CONFIG.apiKey);
     
     // DOM elements
     const imageUpload = document.getElementById('image-upload');
@@ -536,7 +533,24 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('📝 Context length:', context ? context.length : 0);
             
             // Generate both alt text and long description
-            const result = await api.generateBoth(currentImage, context);
+            const response = await fetch(`${API_CONFIG.endpoint}/generate-descriptions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    image: currentImage,
+                    context: context,
+                    referenceDocument: '',
+                    type: 'image'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
             console.log('✅ Generation successful:', result);
             
             showResults(result);
