@@ -545,7 +545,7 @@ exports.handler = async (event, context) => {
    - Focus on what makes the image ${hasEducationalContext ? 'educationally relevant and scientifically meaningful' : 'interesting or noteworthy'}
    
    ${hasEducationalContext ? 
-     'Connect the visual content to the educational context provided, making the scientific concepts concrete and observable.' : 
+     'MANDATORY: You MUST reference and connect to the specific educational concepts mentioned in the USER CONTEXT section. Do not write a generic photo description - write an educational description that uses this image to illustrate the scientific principles provided.' : 
      'Write as if describing the photo to someone who cannot see it, emphasizing what is visually important or meaningful about the scene.'}`;
     } else {
       specificPrompt = `
@@ -579,6 +579,14 @@ REFERENCE MATERIALS:
 ${combinedReferences}
 
 USER CONTEXT: ${context || 'No additional context provided'}
+
+${hasEducationalContext ? `
+🎓 CRITICAL: The user has provided educational context above. You MUST incorporate this context into your descriptions:
+- Connect the visual elements in the image to the concepts mentioned in the user context
+- Use the context to explain the educational significance of what is shown
+- Make the scientific principles concrete by relating them to observable elements in the image
+- Do NOT ignore the educational context - it is essential for creating meaningful descriptions
+` : ''}
 
 Generate exactly four sections:
 
