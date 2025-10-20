@@ -532,15 +532,21 @@ exports.handler = async (event, context) => {
     let specificPrompt = '';
     
     if (imageType === 'PHOTOGRAPH') {
+      const hasEducationalContext = context && context.trim().length > 0;
       specificPrompt = `
-2. **Figure Description**: Write a natural, descriptive explanation of what is shown in the photograph:
+2. **Figure Description**: ${hasEducationalContext ? 
+  'Write an educational description that connects the photograph to the provided learning context:' : 
+  'Write a natural, descriptive explanation of what is shown in the photograph:'}
    - Describe the main subjects, objects, or scene depicted
-   - Include relevant details about setting, context, or atmosphere
-   - Mention notable visual elements, colors, lighting, or composition
+   ${hasEducationalContext ? 
+     '- Connect visual elements to the educational concepts mentioned in the context\n   - Explain how this image demonstrates or illustrates the scientific principles provided\n   - Use the photograph as a real-world example of the concepts being taught' : 
+     '- Include relevant details about setting, context, or atmosphere\n   - Mention notable visual elements, colors, lighting, or composition'}
    - Use clear, accessible language that helps readers visualize the scene
-   - Focus on what makes the image interesting or noteworthy
+   - Focus on what makes the image ${hasEducationalContext ? 'educationally relevant and scientifically meaningful' : 'interesting or noteworthy'}
    
-   Write as if describing the photo to someone who cannot see it, emphasizing what is visually important or meaningful about the scene.`;
+   ${hasEducationalContext ? 
+     'Connect the visual content to the educational context provided, making the scientific concepts concrete and observable.' : 
+     'Write as if describing the photo to someone who cannot see it, emphasizing what is visually important or meaningful about the scene.'}`;
     } else {
       specificPrompt = `
 2. **Figure Description**: Write INTERPRETIVE descriptions that explain scientific meaning.
@@ -558,9 +564,12 @@ exports.handler = async (event, context) => {
     }
 
     // Create comprehensive prompt for all four sections
+    const hasEducationalContext = context && context.trim().length > 0;
     const systemRole = imageType === 'PHOTOGRAPH' 
-      ? 'You are an expert in creating accessible image descriptions for general photographs and visual content.'
-      : 'You are an expert in creating accessible educational content for Dreamscape Learn curriculum.';
+      ? hasEducationalContext 
+        ? 'You are an expert in creating accessible educational image descriptions that connect photographs to scientific and educational concepts.'
+        : 'You are an expert in creating accessible image descriptions for general photographs and visual content.'
+      : 'You are an expert in creating accessible educational content following educational accessibility standards.';
     
     const prompt = `${systemRole} Generate accessibility content for this image following accessibility best practices.
 
