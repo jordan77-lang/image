@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Image Accessibility Tool - Generate alt text and long descriptions for educational content and digital materials">
+    <meta name="theme-color" content="#111111">
+    <meta name="version" content="1.1.0-2025-10-14">
+    <title>Image Accessibility Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Progress bar styles -->
+    <style>
+        .image-upload-progress, .context-file-progress {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-secondary, #f8f9fa);
+            border-radius: 8px;
+            border: 1px solid var(--border-color, #e0e0e0);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bg-tertiary, #e9ecef);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color, #007bff), var(--secondary-color, #0056b3));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-message, .progress-percentage {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary, #666);
+        }
+        
+        .image-validation {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--success-bg, #d4edda);
+            border: 1px solid var(--success-border, #c3e6cb);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .validation-icon {
+            font-size: 1.5rem;
+            color: var(--success-color, #155724);
+        }
+        
+        .validation-title {
+            margin: 0 0 0.25rem 0;
+            font-weight: 600;
+            color: var(--success-color, #155724);
+        }
+        
+        .validation-details {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--success-text, #155724);
+        }
+    </style>
+    <!-- PDF.js for PDF text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+</head>
+<body>
+    <!-- Skip link for keyboard users -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header>
+        <nav>
+            <div class="container">
+                <div class="header-controls">
+                    <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode" aria-pressed="false">🌙</button>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main id="main-content">
+        <section class="hero">
+            <div class="container">
+                <!-- Promote primary heading to h1 for proper document outline -->
+                <h1>Make Your Images Accessible</h1>
+                <p>Generate accessibility-compliant alt text, figure descriptions, and transcribed text using educational accessibility standards.</p>
+                <div class="cta-buttons">
+                    <a href="#best-practices" class="btn btn-primary">Learn More</a>
+                    <a href="#how-to-use" class="btn btn-secondary">Get Started</a>
+                </div>
+            </div>
+        </section>
+
+
+
+
+
+        <section id="how-to-use" class="section section-alt">
+            <div class="container">
+                <h2>How to Use</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h3>Upload Your Image</h3>
+                            <p>Select or drag and drop any chart, diagram, or image that needs accessibility descriptions.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h3>Add Context (Optional)</h3>
+                            <p>Describe how the image relates to your curriculum or learning objectives for more accurate results.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h3>Generate Descriptions</h3>
+                            <p>Our AI analyzes your image and creates institutional-standard accessibility content instantly.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h3>Copy & Use</h3>
+                            <p>Receive alt text, figure descriptions, long descriptions, and transcribed text ready for immediate use.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Interactive Tool Section -->
+                <div class="tool-container">
+                    <h3>Get Started</h3>
+                    <p>Upload an image and get instant accessibility descriptions generated by our AI bot.</p>
+                    
+                    <div class="upload-section">
+                        <label for="image-upload" class="upload-label">
+                            <div class="upload-area" id="upload-area" role="group" aria-labelledby="upload-area-heading" aria-describedby="upload-area-help">
+                                <div class="upload-icon" aria-hidden="true">📷</div>
+                                <h4 id="upload-area-heading" class="visually-hidden">Image upload</h4>
+                                <p>Click to upload an image or drag and drop</p>
+                                <p class="upload-note" id="upload-area-help">Supported formats: JPEG, PNG, GIF, WebP (max 10MB)</p>
+                            </div>
+                            <input type="file" id="image-upload" accept="image/*" style="display: none;">
+                        </label>
+                        
+                        <!-- Image upload progress bar -->
+                        <div id="image-upload-progress" class="image-upload-progress" style="display: none;" role="status" aria-live="polite">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="image-progress-fill"></div>
+                            </div>
+                            <p class="progress-message" id="image-progress-message">Processing image...</p>
+                            <p class="progress-percentage" id="image-progress-percentage">0%</p>
+                        </div>
+                        
+                        <!-- Image validation feedback -->
+                        <div id="image-validation" class="image-validation" style="display: none;" role="status" aria-live="polite">
+                            <div class="validation-icon">✓</div>
+                            <div class="validation-message">
+                                <p class="validation-title">Image ready for processing</p>
+                                <p class="validation-details" id="image-details"></p>
+                            </div>
+                        </div>
+                        
+                        <div id="image-preview" class="image-preview" style="display: none;" aria-live="polite"></div>
+                    </div>
+
+                    <div class="context-section">
+                        <label for="context-input">Context (Optional)</label>
+                        <textarea id="context-input" placeholder="Describe how this image is used in your educational content. Example: 'This chart shows biology test scores across grade levels for lesson on data analysis.' Include relevant assignment text or learning objectives to improve accuracy."></textarea>
+                        
+                        <label class="context-file-heading">Upload Context Document (Optional)</label>
+                        <div class="context-file-section">
+                            <label for="context-file-upload" class="context-file-label">
+                                <div class="context-upload-area" role="group" aria-labelledby="context-doc-heading" aria-describedby="context-doc-help">
+                                    <div class="context-upload-icon" aria-hidden="true">📄</div>
+                                    <h4 id="context-doc-heading" class="visually-hidden">Context document upload</h4>
+                                    <p>Upload context document</p>
+                                    <p class="context-upload-note" id="context-doc-help">PDF, Text, or Markdown (max 5MB). Text only is extracted.</p>
+                                    <p class="context-upload-hint" style="font-size: 1.1em; font-weight: 600;">💡 Document will be used for all images until removed</p>
+                                </div>
+                                <input type="file" id="context-file-upload" accept=".txt,.md,.pdf" style="display: none;">
+                            </label>
+                            <div id="context-file-progress" class="context-file-progress" style="display: none;" role="status" aria-live="polite">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <p class="progress-message">Processing document...</p>
+                            </div>
+                            <div id="context-file-preview" class="context-file-preview" style="display: none;"></div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="generate-section">
+                        <div class="model-selection">
+                            <label for="model-select">AI Model Selection</label>
+                            <select id="model-select" class="model-dropdown">
+                                <option value="gpt-5" selected>GPT-5 (Latest - Best quality)</option>
+                                <option value="gpt-4o">GPT-4o (Excellent quality)</option>
+                                <option value="gpt-4o-mini">GPT-4o Mini (Faster, good quality)</option>
+                                <option value="gpt-4-turbo">GPT-4 Turbo (High quality)</option>
+                                <option value="gpt-4">GPT-4 (Standard quality)</option>
+                                <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast, basic quality)</option>
+                            </select>
+                            <p class="model-description" id="model-description">
+                                Latest generation model with superior reasoning and image analysis capabilities for the most accurate accessibility descriptions.
+                            </p>
+                        </div>
+                        
+                        <button id="generate-btn" class="btn btn-primary btn-large" type="button" disabled aria-disabled="true">Generate Descriptions</button>
+                    </div>
+
+                    <div id="loading-indicator" class="loading-indicator" style="display: none;" role="status" aria-live="assertive">
+                        <div class="spinner"></div>
+                        <p>Generating accessibility descriptions...</p>
+                    </div>
+
+                    <div id="error-container" class="error-container" style="display: none;" role="alert" aria-live="assertive">
+                        <div class="error-header">
+                            <div class="error-icon">⚠️</div>
+                            <h4 class="error-title">Processing Error</h4>
+                        </div>
+                        <div class="error-content">
+                            <p class="error-message" id="error-message"></p>
+                            <div class="error-suggestions" id="error-suggestions" style="display: none;">
+                                <h5>Suggestions to improve results:</h5>
+                                <ul id="error-suggestions-list"></ul>
+                            </div>
+                            <button type="button" class="btn btn-secondary retry-btn" id="retry-btn" style="display: none;">Try Again</button>
+                        </div>
+                    </div>
+                    <div id="results-container" class="results-container" style="display: none;" role="region" aria-label="Generated accessibility descriptions" aria-live="polite"></div>
+                </div>
+
+
+            </div>
+        </section>
+
+        <section id="best-practices" class="section">
+            <div class="container">
+                <h2>Educational Accessibility Best Practices</h2>
+                
+                <div class="about-section">
+                    <p>This AI-powered tool is designed to help educators and content creators generate accessible image descriptions for digital learning materials. It follows established educational accessibility standards and proven best practices.</p>
+                    
+                    <div class="features">
+                        <div class="feature-card">
+                            <h3>🎯 Education-Focused</h3>
+                            <p>Generates descriptions tailored to educational accessibility standards</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>📝 Four Content Types</h3>
+                            <p>Alt text, figure descriptions, long descriptions, and transcribed text</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>📖 Educational Focus</h3>
+                            <p>Prioritizes learning objectives and pedagogical value</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>♿ Institutional Standards</h3>
+                            <p>Follows established accessibility and style guidelines</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="best-practices-grid">
+                    <div class="practice">
+                        <h3>Alt Text Standards</h3>
+                        <ul>
+                            <li>120 characters maximum for optimal screen reader use</li>
+                            <li>Use active voice and present tense</li>
+                            <li>Spell out units in full (e.g., "milligrams per liter")</li>
+                            <li>Use "to" for ranges (e.g., "5 to 10" not "5-10")</li>
+                            <li>Focus on educational content and key data points</li>
+                        </ul>
+                    </div>
+                    <div class="practice">
+                        <h3>Figure Descriptions</h3>
+                        <ul>
+                            <li><strong>Lead with the "so what?"</strong> - Begin with the main finding or biological significance</li>
+                            <li><strong>Use Kroodsma-style structure</strong> - Start with interpretation, then supporting details</li>
+                            <li><strong>Make it educational</strong> - Focus on what students should learn from the visual data</li>
+                            <li><strong>Stand-alone content</strong> - Descriptions should be meaningful without reading full text</li>
+                            <li><strong>Include quantitative results</strong> - Add specific data points when they support the main message</li>
+                            <li><strong>Connect to learning objectives</strong> - Link visual patterns to course concepts and curriculum goals</li>
+                            <li><strong>Avoid generic language</strong> - Skip phrases like "shows" or "depicts" without specific detail</li>
+                        </ul>
+                    </div>
+                    <div class="practice">
+                        <h3>Long Descriptions</h3>
+                        <ul>
+                            <li>Always begin: "This image is a [type] showing..."</li>
+                            <li>Emphasize educational takeaway and relationships</li>
+                            <li>Use plain language and short clauses</li>
+                            <li>Include quantitative data when relevant for learning</li>
+                            <li>Never restate paragraph text or captions</li>
+                        </ul>
+                    </div>
+                    <div class="practice">
+                        <h3>Transcribed Text</h3>
+                        <ul>
+                            <li>Preserve all visible text exactly as shown</li>
+                            <li>Include axis labels, legends, titles, and data values</li>
+                            <li>List frequency distribution bins with exact ranges</li>
+                            <li>Maintain logical reading order</li>
+                            <li>Note "No text visible in image" when applicable</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="section section-alt">
+            <div class="container">
+                <h2>Additional Resources</h2>
+                <div class="resources-list">
+                    <a href="https://www.w3.org/WAI/tutorials/images/" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>W3C Image Tutorial</h3>
+                        <p>Comprehensive guide to making images accessible</p>
+                    </a>
+                    <a href="https://webaim.org/articles/gonewild/#images" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>WebAIM: Alternative Text</h3>
+                        <p>Best practices for writing alt text</p>
+                    </a>
+                    <a href="https://www.w3.org/WAI/WCAG21/Understanding/non-text-content.html" target="_blank" rel="noopener noreferrer" class="resource-link">
+                        <h3>WCAG 2.1: Non-text Content</h3>
+                        <p>Understanding accessibility requirements</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="container">
+                <h2>Contact & Contribute</h2>
+                <p>This tool is open source and hosted on GitHub. We welcome contributions and feedback!</p>
+                <div class="contact-buttons">
+                    <a href="https://github.com/jordan77-lang/image" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">View on GitHub</a>
+                    <a href="https://github.com/jordan77-lang/image/issues" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">Report an Issue</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Image Accessibility Tool. Open source project for educational accessibility.</p>
+            <p>Licensed under MIT License. Contributions welcome!</p>
+            <p class="version-info">
+                <span id="footer-version">Version: —</span>
+                <span> | </span>
+                <span id="footer-deploy">Deployed: —</span>
+                <span id="footer-commit" style="display:none"></span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- Defer local scripts -->
+    <script src="app.js" defer></script>
+    
+    <!-- Populate footer version/timestamp via Netlify Function -->
+    <script>
+        (function(){
+            fetch('/.netlify/functions/version')
+                .then(r => r.ok ? r.json() : null)
+                .then(info => {
+                    if (!info) return;
+                    const v = document.getElementById('footer-version');
+                    const d = document.getElementById('footer-deploy');
+                    const c = document.getElementById('footer-commit');
+                    if (v) v.textContent = `Version: ${info.version}`;
+                    if (d) d.textContent = `Deployed: ${info.timestamp}${info.context ? ' · ' + info.context : ''}`;
+                    if (c && info.commit) { c.style.display = 'inline'; c.textContent = ` | Commit: ${info.commit.substring(0,7)}`; }
+                })
+                .catch(() => {
+                    const d = document.getElementById('footer-deploy');
+                    if (d) d.textContent = `Deployed: ${new Date().toISOString()}`;
+                });
+        })();
+    </script>
+</body>
+</html>

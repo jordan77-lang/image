@@ -1,0 +1,53 @@
+SAMPLE ASSIGNMENT: ARCHIVAL FILM FORENSICS LAB
+
+Course: Forensic Science 201 (College Introductory)
+Duration: 2 weeks
+Assessment: Lab report + identification challenge
+
+OVERVIEW:
+Students will analyze forensic evidence from historical archival film to determine material composition. Using density measurements, flame tests, and ion mobility spectrometry (IMS), students will identify the polymer base and metallic compounds present in film samples.
+
+BACKGROUND CONCEPTS:
+- Atomic bonding (ionic, covalent, metallic)
+- Polymer structures: polyethylene terephthalate (PETE) vs cellulose
+- Molecular packing and density calculations
+- Flame emission spectroscopy and metal ion identification
+- Ion mobility spectrometry principles and data interpretation
+
+LAB PROCEDURES:
+
+Part 1: Polymer Identification
+Students will measure the mass and volume (via water displacement) of film samples to calculate density. By comparing calculated densities to reference values, students will determine whether the base is PETE or cellulose acetate.
+
+Part 2: Metal Ion Identification
+Students will conduct flame tests on dissolved film samples. Different metal ions produce characteristic flame colors:
+- Silver (Ag): produces white/gray flame
+- Barium (Ba): produces green flame
+Students will match observed colors to metals in silver halide and barium ferrite compounds used in archival film.
+
+Part 3: IMS Analysis
+Students will analyze ion mobility spectra to identify chemical compounds based on drift time. Peak height indicates relative abundance. Students will use reference drift times to identify accelerants and other compounds in film samples.
+
+FINAL CHALLENGE:
+Using all three analysis methods, students must determine which combination of polymer base and metallic compound matches the composition of a historic archival film sample from the 1940s.
+
+LEARNING OUTCOMES:
+By completing this lab, students should be able to:
+- Understand chemical bonding in polymers and metals
+- Perform accurate density calculations
+- Interpret flame test results
+- Analyze mass spectrometry data
+- Apply multiple analytical techniques to solve forensic problems
+
+ASSESSMENT RUBRIC:
+- Accurate density calculations (20 pts)
+- Correct flame test identification (20 pts)
+- IMS spectrum interpretation (20 pts)
+- Final film identification with justification (30 pts)
+- Lab technique and safety (10 pts)
+
+NGSS ALIGNMENT:
+HS-PS1-1: Use periodic table to predict properties based on electron configuration
+HS-PS1-3: Plan investigations to compare structures and properties of substances
+HS-PS2-6: Communicate about molecular structure and function
+Science & Engineering Practice 4: Analyzing and interpreting data

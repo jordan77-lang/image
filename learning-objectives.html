@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Objectives Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .lo-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .input-section, .output-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+        
+        .form-group textarea, .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .advanced-toggle {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .advanced-toggle:hover {
+            background: #e9ecef;
+        }
+        
+        .advanced-toggle span {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .advanced-options {
+            display: none;
+            padding-top: 20px;
+        }
+        
+        .advanced-options.open {
+            display: block;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .btn-primary, .btn-secondary {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-primary:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        .btn-secondary:hover {
+            background: #bdc3c7;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .results-table thead {
+            background: #f8f9fa;
+        }
+        
+        .results-table th {
+            text-align: left;
+            padding: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .results-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+        
+        .results-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .lo-id {
+            font-weight: 600;
+            color: #3498db;
+            white-space: nowrap;
+        }
+        
+        .lo-text {
+            line-height: 1.6;
+            color: #2c3e50;
+        }
+        
+        .lo-alignment {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 6px 12px;
+            background: #ecf0f1;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: #495057;
+            transition: all 0.2s;
+        }
+        
+        .btn-icon:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .global-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-table {
+                font-size: 0.9rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+        
+        @media print {
+            .input-section, .btn-icon, .global-actions, .back-link, .header p {
+                display: none;
+            }
+            
+            .output-section {
+                box-shadow: none;
+            }
+            
+            .results-table th {
+                background: white !important;
+            }
+        }
+
+        /* Research section styles */
+        .research-section .lead {
+            color: #555;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .research-list, .references-list {
+            margin: 0;
+            padding-left: 18px;
+            color: #2c3e50;
+        }
+        .research-list li, .references-list li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .references-list a { color: #3498db; text-decoration: none; }
+        .references-list a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="lo-container">
+        <a href="index.html" class="back-link">← Back to Tools</a>
+        
+        <div class="header">
+            <h1>Learning Objectives Generator</h1>
+            <p>Extract standards-aligned learning objectives from your course materials</p>
+        </div>
+        
+        <div class="input-section">
+            <form id="loForm">
+                <div class="form-group">
+                    <label for="contentFile">Upload Course Content (Optional)</label>
+                    <input 
+                        type="file" 
+                        id="contentFile" 
+                        accept=".txt,.md,.doc,.docx,.pdf"
+                        style="padding: 8px;"
+                    >
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Supported: .txt, .md, .pdf, .doc, .docx - File will replace text area content
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contentText">Or Paste Course Content *</label>
+                    <textarea 
+                        id="contentText" 
+                        placeholder="Paste your syllabus, assignment description, lesson outline, or other educational content here..."
+                    ></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="audienceLevel">Audience Level *</label>
+                        <select id="audienceLevel" required>
+                            <option value="high_school">High School</option>
+                            <option value="college_intro" selected>College (Introductory)</option>
+                            <option value="college_advanced">College (Advanced)</option>
+                            <option value="graduate">Graduate Level</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="subjectArea">Subject Area (Optional)</label>
+                        <input 
+                            type="text" 
+                            id="subjectArea" 
+                            placeholder="e.g., Chemistry, History, Biology"
+                        >
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="objectiveScope">Objective Scope *</label>
+                    <select id="objectiveScope" required>
+                        <option value="task_specific" selected>Task-Specific (matches exact content details)</option>
+                        <option value="course_level">Course-Level (generalized for broader use)</option>
+                    </select>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        Task-specific: "Compare the chemical composition of silver halide and barium ferrite"<br>
+                        Course-level: "Compare the chemical composition of metal salts"
+                    </small>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="framework">Standards Framework</label>
+                        <select id="framework">
+                            <option value="all" selected>All (Bloom's + NGSS + CCSS)</option>
+                            <option value="bloom">Bloom's Taxonomy Only</option>
+                            <option value="ngss">NGSS (Science) Only</option>
+                            <option value="ccss">Common Core Only</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numObjectives">Number of Objectives</label>
+                        <input 
+                            type="number" 
+                            id="numObjectives" 
+                            min="1" 
+                            max="20" 
+                            placeholder="Auto-detect from content"
+                        >
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            Leave as "auto" to generate 1 objective per activity/assessment
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn-primary" id="generateBtn">
+                        Generate Learning Objectives
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="clearForm()">
+                        Clear
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="loadingSection" class="output-section hidden">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Generating learning objectives...</p>
+            </div>
+        </div>
+        
+        <div id="outputSection" class="output-section hidden">
+            <h2>Generated Learning Objectives</h2>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">#</th>
+                        <th style="width: 45%;">Learning Objective</th>
+                        <th style="width: 40%;">Standards Alignment</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                    <!-- Results will be inserted here -->
+                </tbody>
+            </table>
+            
+            <div class="global-actions">
+                <button class="btn-secondary" onclick="copyAllObjectives()">
+                    📋 Copy All
+                </button>
+                <button class="btn-secondary" onclick="downloadJSON()">
+                    💾 Download JSON
+                </button>
+                <button class="btn-secondary" onclick="window.print()">
+                    🖨️ Print View
+                </button>
+                <button class="btn-primary" onclick="regenerate()">
+                    🔄 Regenerate
+                </button>
+            </div>
+            
+            <div id="errorMessage" class="error-message hidden"></div>
+        </div>
+    </div>
+    
+        <section class="output-section" style="margin-top: 30px;">
+            <div class="research-section">
+                <h2>Science and research behind this tool</h2>
+                <p class="lead">This generator applies established instructional design frameworks to extract or reverse-engineer measurable learning objectives and aligns them to appropriate standards.</p>
+                <ul class="research-list">
+                    <li>Bloom's Taxonomy (Anderson &amp; Krathwohl, 2001) for cognitive levels and measurable verbs.</li>
+                    <li>ABCD method for learning objectives (Mager-inspired; Audience, Behavior, Condition, Degree).</li>
+                    <li>SMART criteria for objective quality (Doran, 1981).</li>
+                    <li>Constructive alignment principles (Biggs &amp; Tang, 2011) to sequence objectives from foundational to higher-order.</li>
+                    <li>NGSS three-dimensional learning (NGSS Lead States, 2013) for science practices and performance expectations.</li>
+                    <li>CCSS (ELA/Math) for literacy and quantitative reasoning in disciplinary tasks.</li>
+                    <li>LLM-assisted text analysis: objectives are extracted or inferred from assignment tasks, steps, and assessments using structured prompting and JSON-constrained outputs.</li>
+                </ul>
+                <h3 style="margin-top: 20px;">References</h3>
+                <ul class="references-list">
+                    <li>Anderson, L. W., &amp; Krathwohl, D. R. (2001). A Taxonomy for Learning, Teaching, and Assessing.</li>
+                    <li>NGSS Lead States. (2013). Next Generation Science Standards. <a href="https://www.nextgenscience.org/" target="_blank" rel="noopener">nextgenscience.org</a></li>
+                    <li>Common Core State Standards Initiative (2010). <a href="https://www.corestandards.org/" target="_blank" rel="noopener">corestandards.org</a></li>
+                    <li>Doran, G. T. (1981). There’s a S.M.A.R.T. way to write management’s goals and objectives.</li>
+                    <li>Biggs, J., &amp; Tang, C. (2011). Teaching for Quality Learning at University.</li>
+                    <li>Mager, R. F. (1997). Preparing Instructional Objectives (3rd ed.).</li>
+                    <li>OpenAI. (2023). GPT-4 Technical Report.</li>
+                </ul>
+            </div>
+        </section>
+
+        <footer style="margin-top: 30px;">
+            <div style="color:#666; font-size: 0.95rem;">
+                <span id="footer-version">Version: —</span>
+                <span> | </span>
+                <span id="footer-deploy">Deployed: —</span>
+                <span id="footer-commit" style="display:none"></span>
+            </div>
+        </footer>
+
+    <script src="lo-app.js"></script>
+    <script>
+        // Populate footer with deployment version and timestamp
+        (function(){
+            fetch('/.netlify/functions/version')
+                .then(r => r.ok ? r.json() : null)
+                .then(info => {
+                    if (!info) return;
+                    const v = document.getElementById('footer-version');
+                    const d = document.getElementById('footer-deploy');
+                    const c = document.getElementById('footer-commit');
+                    if (v) v.textContent = `Version: ${info.version}`;
+                    if (d) d.textContent = `Deployed: ${info.timestamp}${info.context ? ' · ' + info.context : ''}`;
+                    if (c && info.commit) { c.style.display = 'inline'; c.textContent = ` | Commit: ${info.commit.substring(0,7)}`; }
+                })
+                .catch(() => {
+                    const d = document.getElementById('footer-deploy');
+                    if (d) d.textContent = `Deployed: ${new Date().toISOString()}`;
+                });
+        })();
+    </script>
+</body>
+</html>

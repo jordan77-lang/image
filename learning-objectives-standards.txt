@@ -1,0 +1,239 @@
+LEARNING OBJECTIVES GENERATION STANDARDS
+=========================================
+
+CORE PRINCIPLES FOR HIGH-QUALITY LEARNING OBJECTIVES
+
+1. STUDENT-CENTERED FOCUS
+   - Objectives must describe what STUDENTS will accomplish, not what instructors will teach
+   - Use phrasing: "Students will be able to..." or "Learners will..."
+   - Avoid: "Teach X," "Cover Y," "Introduce Z"
+
+2. MEASURABLE ACTION VERBS
+   - Use observable, assessable verbs from Bloom's Taxonomy
+   - Avoid vague verbs: understand, know, learn, appreciate
+   - Prefer concrete verbs: identify, analyze, calculate, design, evaluate, explain
+
+3. SPECIFIC AND CLEAR
+   - Each objective should target ONE specific competency
+   - Include conditions when relevant: "Given X, students will..."
+   - Include criteria when measurable: "...with 90% accuracy"
+   - Keep objectives concise (under 140 characters preferred)
+
+4. ABCD FORMAT (when appropriate)
+   A = Audience (who: students, learners)
+   B = Behavior (action verb + what they will do)
+   C = Condition (context, tools, or resources provided)
+   D = Degree (criteria for success)
+
+5. SMART CRITERIA
+   S = Specific (targets clear competency)
+   M = Measurable (can be assessed or observed)
+   A = Achievable (realistic for level and timeframe)
+   R = Results-oriented (focuses on learning outcome)
+   T = Time-bound (if applicable)
+
+
+BLOOM'S TAXONOMY - COGNITIVE LEVELS
+====================================
+
+LEVEL 1: REMEMBER (Recall facts and basic concepts)
+Verbs: define, list, identify, recall, recognize, state, name, label, match, memorize
+
+LEVEL 2: UNDERSTAND (Explain ideas or concepts)
+Verbs: explain, describe, summarize, paraphrase, classify, compare, interpret, discuss, distinguish
+
+LEVEL 3: APPLY (Use information in new situations)
+Verbs: use, solve, demonstrate, calculate, apply, predict, show, execute, implement, operate
+
+LEVEL 4: ANALYZE (Draw connections among ideas)
+Verbs: analyze, differentiate, distinguish, examine, investigate, categorize, compare, contrast, organize, deconstruct
+
+LEVEL 5: EVALUATE (Justify a decision or course of action)
+Verbs: evaluate, assess, critique, judge, justify, defend, argue, appraise, support, validate
+
+LEVEL 6: CREATE (Produce new or original work)
+Verbs: create, design, construct, develop, formulate, compose, plan, produce, invent, generate
+
+
+STYLE AND FORMATTING RULES
+===========================
+
+SENTENCE STRUCTURE:
+- Start with action verb in base form
+- Use sentence case (capitalize first word only, unless proper nouns)
+- Keep sentence structure simple and direct
+- Avoid compound objectives (split into multiple if covering >1 skill)
+
+AVOID:
+- Contractions (don't, can't, won't)
+- Em dashes (—) or unnecessary punctuation
+- Passive voice ("will be understood" → "will explain")
+- Jargon or undefined technical terms
+- Multiple verbs in one objective (unless naturally grouped)
+
+PREFER:
+- Active voice
+- Concrete, discipline-specific nouns
+- Clear prerequisite ordering (foundational before advanced)
+- Parallel structure when listing multiple objectives
+
+
+STANDARDS ALIGNMENT GUIDANCE
+=============================
+
+BLOOM'S TAXONOMY:
+- Default framework for most disciplines
+- Align objectives to appropriate cognitive level for audience
+- Progress from lower-order (remember, understand) to higher-order (analyze, evaluate, create)
+
+NGSS (Next Generation Science Standards):
+- Use for K-12 and college science courses
+- Integrate three dimensions: practices, core ideas, crosscutting concepts
+- Format: "Use a model to..." "Analyze data to..." "Construct an explanation..."
+- Example: "NGSS HS-PS1-1: Use the periodic table as a model to predict the relative properties of elements"
+
+COMMON CORE STATE STANDARDS (CCSS):
+- Use for ELA and Mathematics
+- Match phrasing to standard language
+- Include standard code when applicable
+- Example: "CCSS.ELA-LITERACY.RL.11-12.4: Determine meaning of words and phrases as used in text"
+
+ALIGNMENT FORMAT:
+- If standard is clear, cite it: "[Standard Code]: [Brief description]"
+- If multiple standards apply, separate with " · " or list both
+- If no specific standard, return null
+- Keep alignment text under 200 characters
+
+
+AUDIENCE LEVEL GUIDANCE
+========================
+
+HIGH SCHOOL:
+- Focus on fundamental skills and content mastery
+- Use clear, accessible language
+- Balance lower and mid-level Bloom's verbs (remember, understand, apply, analyze)
+- Align to state standards (NGSS, CCSS) when applicable
+
+COLLEGE (INTRODUCTORY):
+- Assume foundational knowledge from high school
+- Emphasize application, analysis, and some evaluation
+- Use discipline-specific terminology with context
+- Balance breadth and depth
+
+COLLEGE (ADVANCED):
+- Expect synthesis of multiple concepts
+- Emphasize analysis, evaluation, and creation
+- Use advanced discipline-specific vocabulary
+- Focus on higher-order thinking and original work
+
+GRADUATE:
+- Assume deep disciplinary knowledge
+- Emphasize evaluation, creation, and original research
+- Use expert-level terminology
+- Focus on scholarly contribution and advanced problem-solving
+
+
+EXAMPLES OF WELL-WRITTEN OBJECTIVES
+====================================
+
+STRONG EXAMPLES:
+
+✓ "Identify the types of atomic bonds present in polymers and metallic compounds."
+  - Clear action verb (identify), specific content, student-centered
+
+✓ "Calculate the density of a sample from its measured mass and displaced volume."
+  - Measurable action (calculate), includes process, assessable
+
+✓ "Given a dataset of climate trends, analyze patterns to identify evidence of long-term change."
+  - Includes condition (given dataset), action verb (analyze), specific outcome
+
+✓ "Evaluate three policy proposals for reducing carbon emissions and defend your recommendation with evidence."
+  - Higher-order thinking (evaluate, defend), includes criteria (with evidence)
+
+
+WEAK EXAMPLES (with fixes):
+
+✗ "Understand photosynthesis."
+  → "Explain the process of photosynthesis and describe how light energy is converted to chemical energy."
+  (Changed vague "understand" to measurable "explain" and "describe")
+
+✗ "Learn about the French Revolution."
+  → "Identify and analyze the primary causes of the French Revolution."
+  (Changed vague "learn about" to specific action verbs)
+
+✗ "Cover Newton's Laws."
+  → "Apply Newton's three laws of motion to solve problems involving force and acceleration."
+  (Changed teacher-centered "cover" to student-centered "apply")
+
+✗ "Students will know chemical bonding."
+  → "Distinguish between ionic, covalent, and metallic bonding using electronegativity differences."
+  (Changed unmeasurable "know" to specific "distinguish" with criteria)
+
+
+ASSESSMENT SUGGESTIONS (when requested)
+========================================
+
+When include_assessments = true, provide brief aligned assessment ideas:
+- Match cognitive level of objective
+- Suggest format: quiz, problem set, lab, essay, presentation, project, etc.
+- Keep under 100 characters
+- Examples:
+  * "Short answer: Explain process with labeled diagram."
+  * "Problem set: Calculate 5 density values from lab data."
+  * "Essay: Evaluate policy using criteria from rubric."
+
+
+METADATA AND OUTPUT REQUIREMENTS
+=================================
+
+RESPONSE SCHEMA:
+{
+  "learning_objectives": [
+    {
+      "id": "LO1",
+      "objective_text": "<objective with action verb>",
+      "alignment": "<standard or null>"
+    }
+  ],
+  "metadata": {
+    "audience_level": "<high_school|college_intro|college_advanced|graduate>",
+    "subject_area": "<subject or null>",
+    "framework": "<bloom|ngss|ccss>",
+    "source_file_ids": [],
+    "generated_at": "<ISO8601>"
+  }
+}
+
+ID NUMBERING:
+- Use sequential: LO1, LO2, LO3, ..., LO20
+- Maintain order in instructional sequence
+
+ORDERING:
+- Foundational objectives first (prerequisite knowledge)
+- Application and higher-order objectives later
+- Cognitive progression: remember → understand → apply → analyze → evaluate → create
+
+
+COMMON PITFALLS TO AVOID
+=========================
+
+1. TOO VAGUE: "Understand the scientific method"
+   → FIX: "Describe the steps of the scientific method and apply them to design an experiment"
+
+2. TOO BROAD: "Learn everything about World War II"
+   → FIX: "Analyze the political and economic causes of World War II"
+
+3. TEACHER-CENTERED: "Teach students about DNA replication"
+   → FIX: "Students will explain the process of DNA replication and identify key enzymes involved"
+
+4. UNMEASURABLE: "Appreciate classical music"
+   → FIX: "Identify characteristics of Baroque, Classical, and Romantic music periods from listening examples"
+
+5. MULTIPLE SKILLS: "Read, analyze, and write about climate change"
+   → FIX: Split into 3 objectives (one for each skill)
+
+6. ACTIVITY-BASED: "Complete a lab on titration"
+   → FIX: "Perform titrations to determine the concentration of an acid with 95% accuracy"
+
+
+END OF STANDARDS DOCUMENT
