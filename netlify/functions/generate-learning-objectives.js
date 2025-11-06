@@ -62,53 +62,73 @@ exports.handler = async (event, context) => {
             };
         }
         
-        // Auto-detect number of objectives if set to 'auto'
-        let targetNumObjectives;
-        if (num_objectives === 'auto') {
-            // Count activities, assessments, and major sections in content
-            const content = content_text.toLowerCase();
-            const activityIndicators = [
-                /objective \d+:/gi,
-                /objective \d+\./gi,
-                /step \d+:/gi,
-                /activity \d+/gi,
-                /assessment \d+/gi,
-                /assignment \d+/gi,
-                /lab \d+/gi,
-                /part \d+/gi,
-                /section \d+/gi,
-                /task \d+/gi,
-                /exercise \d+/gi,
-                /outcome \d+/gi,
-                /you will complete this objective in \d+ steps/gi,
-                /students will be able to/gi
-            ];
-            
-            let detectedCount = 0;
-            activityIndicators.forEach(pattern => {
-                const matches = content.match(pattern);
-                if (matches) {
-                    // Avoid double-counting if multiple patterns match same text
-                    detectedCount = Math.max(detectedCount, matches.length);
-                }
-            });
-            
-            // Look for explicitly numbered objectives (common pattern)
-            const objectiveMatches = content.match(/objective \d+/gi);
-            if (objectiveMatches) {
-                // Extract the highest objective number
-                const objectiveNumbers = objectiveMatches.map(m => parseInt(m.match(/\d+/)[0]));
-                const maxObjective = Math.max(...objectiveNumbers);
-                detectedCount = Math.max(detectedCount, maxObjective);
-            }
-            
-            // Default to 5 if no activities detected, otherwise use detected count (max 15)
-            targetNumObjectives = detectedCount > 0 ? Math.min(detectedCount, 15) : 5;
-            console.log(`Auto-detected ${detectedCount} activities/assessments/objectives, generating ${targetNumObjectives} objectives`);
-        } else {
-            targetNumObjectives = parseInt(num_objectives) || 5;
-        }    // Build system prompt with DSL standards
-    const systemPrompt = `You are an expert curriculum-authoring assistant specializing in learning objectives design.
+    // Auto-detect number of objectives and ENFORCE >= number of assessed items
+    const contentLower = content_text.toLowerCase();
+    const countAssessedItems = () => {
+      let counts = [];
+      // 1) Question marks (rough proxy for discrete questions)
+      const qm = (content_text.match(/\?/g) || []).length;
+      if (qm) counts.push(qm);
+
+      // 2) Common question stems
+      const questionStems = [
+        /\bwhich of the following\b/gi,
+        /\bselect (the|all) (best|correct)\b/gi,
+        /\bchoose (the|all) (best|correct)\b/gi,
+        /\btrue\/?false\b/gi,
+        /\bmultiple choice\b/gi,
+        /\bshort answer\b/gi,
+        /\bfree[- ]response\b/gi,
+        /\bproblem \d+\b/gi,
+        /\bquestion \d+\b/gi
+      ];
+      questionStems.forEach(rx => {
+        const m = contentLower.match(rx);
+        if (m) counts.push(m.length);
+      });
+
+      // 3) Enumerated steps that likely indicate assessed tasks
+      const stepMatches = content_text.match(/^\s*\d+[\.\)]\s+/gim);
+      if (stepMatches) counts.push(stepMatches.length);
+
+      // 4) Imperative task verbs at line starts (Calculate, Determine, Identify, Explain, Compare, Predict, Analyze, Evaluate, Justify, Classify)
+      const imperative = content_text.match(/^(\s*(calculate|determine|identify|explain|compare|predict|analyze|evaluate|justify|classify|design|derive|prove|show|compute|solve)\b)/gim);
+      if (imperative) counts.push(imperative.length);
+
+      // 5) Existing activity/objective indicators
+      const activityIndicators = [
+        /objective \d+[:\.]/gi,
+        /step \d+[:\.]/gi,
+        /assessment \d+/gi,
+        /assignment \d+/gi,
+        /task \d+/gi,
+        /exercise \d+/gi,
+        /outcome \d+/gi,
+        /students will be able to/gi
+      ];
+      activityIndicators.forEach(pattern => {
+        const matches = contentLower.match(pattern);
+        if (matches) counts.push(matches.length);
+      });
+
+      // Use the maximum heuristic count as a conservative lower bound of assessed items
+      const detected = counts.length ? Math.max(...counts) : 0;
+      return detected;
+    };
+
+    const assessedItemCount = countAssessedItems();
+    let targetNumObjectives;
+    if (num_objectives === 'auto') {
+      targetNumObjectives = assessedItemCount > 0 ? Math.min(assessedItemCount, 30) : 5;
+    } else {
+      const requested = parseInt(num_objectives) || 5;
+      // Enforce minimum equal to assessed items
+      targetNumObjectives = Math.max(requested, Math.min(assessedItemCount || 0, 30));
+    }
+    console.log(`Detected ~${assessedItemCount} assessed items; generating ${targetNumObjectives} objectives`);
+
+    // Build system prompt with DSL standards
+  const systemPrompt = `You are an expert curriculum-authoring assistant specializing in learning objectives design.
 
 KEY PRINCIPLES:
 - Write DIRECT, CONCISE objectives without "Students will" or "Learners will" phrasing
@@ -326,6 +346,10 @@ INSTRUCTIONS:
   - Examples:
     * Bloom's only: "Bloom's: Analyze (Level 4)"
     * Multiple: "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation..."
+
+OBJECTIVE COUNT REQUIREMENT:
+- There must be AT LEAST one objective per detected assessment item/question/step
+- Generate EXACTLY ${targetNumObjectives} objectives such that each detected item is represented by at least one objective
 
 OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning objectives, ordered by instructional sequence.`;
 
