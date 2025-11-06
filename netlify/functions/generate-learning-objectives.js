@@ -48,7 +48,7 @@ exports.handler = async (event, context) => {
             content_text,
             audience_level = 'college_intro',
             subject_area = null,
-            objective_scope = 'task_specific',
+            objective_scope = 'course_level',
             framework = 'all',
             num_objectives = 'auto'
         } = JSON.parse(event.body);

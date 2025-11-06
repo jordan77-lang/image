@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
-            background-color: var(--background, #ffffff);
+            /* Use the same subtle contrast background as the image tool sections */
+            background-color: var(--background-alt, #f1f3f4);
         }
         
         .lo-container {
@@ -366,8 +367,8 @@
                 <div class="form-group">
                     <label for="objectiveScope">Objective Scope *</label>
                     <select id="objectiveScope" required>
-                        <option value="task_specific" selected>Task-Specific (matches exact content details)</option>
-                        <option value="course_level">Course-Level (generalized for broader use)</option>
+                        <option value="course_level" selected>Course-Level (generalized for broader use)</option>
+                        <option value="task_specific">Task-Specific (matches exact content details)</option>
                     </select>
                     <small style="color: #666; display: block; margin-top: 5px;">
                         Task-specific: "Compare the chemical composition of silver halide and barium ferrite"<br>

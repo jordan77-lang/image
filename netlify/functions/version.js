@@ -21,11 +21,17 @@ exports.handler = async (event) => {
   try {
     const pkgPath = path.join(__dirname, '..', '..', 'package.json');
     let pkg = { name: 'app', version: '0.0.0' };
+    // Prefer bundler-friendly require so Netlify includes the JSON file in the function bundle
     try {
-      const raw = fs.readFileSync(pkgPath, 'utf-8');
-      pkg = JSON.parse(raw);
-    } catch (e) {
-      // ignore, fallback to defaults
+      // eslint-disable-next-line import/no-dynamic-require, global-require
+      pkg = require(pkgPath);
+    } catch (rErr) {
+      try {
+        const raw = fs.readFileSync(pkgPath, 'utf-8');
+        pkg = JSON.parse(raw);
+      } catch (e) {
+        // ignore, fallback to defaults
+      }
     }
 
     const payload = {
