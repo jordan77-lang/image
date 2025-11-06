@@ -6,6 +6,10 @@
 [build.environment]
   NODE_VERSION = "18"
 
+[# Ensure package.json is bundled into functions so version endpoint can read it]
+[functions]
+  included_files = ["package.json"]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
