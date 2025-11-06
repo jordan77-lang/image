@@ -499,6 +499,18 @@
     <script>
         // Populate footer with deployment version and timestamp
         (function(){
+            function formatDateTime(isoString) {
+                const date = new Date(isoString);
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                const year = date.getFullYear();
+                let hours = date.getHours();
+                const minutes = date.getMinutes().toString().padStart(2, '0');
+                const ampm = hours >= 12 ? 'pm' : 'am';
+                hours = hours % 12 || 12;
+                return `${month}/${day}/${year} ${hours}:${minutes}${ampm}`;
+            }
+            
             fetch('/.netlify/functions/version')
                 .then(r => r.ok ? r.json() : null)
                 .then(info => {
@@ -507,12 +519,12 @@
                     const d = document.getElementById('footer-deploy');
                     const c = document.getElementById('footer-commit');
                     if (v) v.textContent = `Version: ${info.version}`;
-                    if (d) d.textContent = `Deployed: ${info.timestamp}${info.context ? ' · ' + info.context : ''}`;
+                    if (d) d.textContent = `Deployed: ${formatDateTime(info.timestamp)}${info.context ? ' · ' + info.context : ''}`;
                     if (c && info.commit) { c.style.display = 'inline'; c.textContent = ` | Commit: ${info.commit.substring(0,7)}`; }
                 })
                 .catch(() => {
                     const d = document.getElementById('footer-deploy');
-                    if (d) d.textContent = `Deployed: ${new Date().toISOString()}`;
+                    if (d) d.textContent = `Deployed: ${formatDateTime(new Date().toISOString())}`;
                 });
         })();
     </script>
