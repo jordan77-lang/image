@@ -228,6 +228,39 @@ function downloadJSON() {
     showToast('JSON file downloaded!');
 }
 
+// Download CSV table
+function downloadCSV() {
+    if (!currentResults || !currentResults.learning_objectives) {
+        showError('No objectives to download');
+        return;
+    }
+    
+    // Create CSV content with headers
+    let csv = '#,Learning Objective,Alignment\n';
+    
+    currentResults.learning_objectives.forEach((lo) => {
+        // Escape quotes and wrap fields with commas/quotes in double quotes
+        const id = lo.id || '';
+        const objective = (lo.objective_text || '').replace(/"/g, '""');
+        const alignment = (lo.alignment || '').replace(/"/g, '""');
+        
+        csv += `"${id}","${objective}","${alignment}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `learning-objectives-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('CSV file downloaded!');
+}
+
 // Regenerate with same inputs
 function regenerate() {
     document.getElementById('loForm').dispatchEvent(new Event('submit'));
