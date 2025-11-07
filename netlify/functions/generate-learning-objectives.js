@@ -248,7 +248,7 @@ Examples of task-specific objectives:
     
     // Build user prompt
     const alignmentGuidance = framework === 'all'
-      ? 'Align each objective to ALL applicable standards IN THE SAME alignment field, separated by " · ": ALWAYS include Bloom\'s Taxonomy level; ADD NGSS codes for science content/practices; ADD CCSS codes for literacy, technical reading/writing (CCSS.ELA-LITERACY.RST/WHST apply to ALL disciplines including science), or mathematics. Example: "Bloom\'s: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model to predict relative properties of elements · CCSS.ELA-LITERACY.RST.11-12.7: Integrate and evaluate multiple sources of information". CCSS applies broadly: RST (Reading Science/Tech), WHST (Writing Science/Tech), and Math standards cross all subjects. Write out FULL standard descriptions without truncating.'
+      ? 'Align each objective to ALL applicable standards IN THE SAME alignment field, separated by " · ": ALWAYS include Bloom\'s Taxonomy level; ADD ALL applicable NGSS codes (objectives may align to MULTIPLE NGSS standards - include performance expectations, science practices, crosscutting concepts, etc.); ADD ALL applicable CCSS codes (objectives may align to MULTIPLE CCSS standards - include RST, WHST, Math, etc.). Example: "Bloom\'s: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model to predict relative properties of elements · NGSS Crosscutting Concept: Structure and Function · CCSS.ELA-LITERACY.RST.11-12.7: Integrate and evaluate multiple sources of information · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units as a way to understand problems and guide solution of multi-step problems". CCSS applies broadly: RST (Reading Science/Tech), WHST (Writing Science/Tech), and Math standards cross all subjects. Write out FULL standard descriptions without truncating. Include ALL genuinely applicable standards even if it results in a long alignment string.'
       : framework === 'ngss' 
       ? 'Align objectives to Next Generation Science Standards (NGSS) performance expectations when possible. Include scientific practices (e.g., "analyze data," "construct explanations," "develop models").'
       : framework === 'ccss'
@@ -339,17 +339,18 @@ INSTRUCTIONS:
    - ${objective_scope === 'course_level' ? 'Uses generalized terminology (e.g., "an element" not "arsenic")' : 'Uses specific terminology from the content'}
 
 8. For alignment field:
-  - If framework = "all": include MULTIPLE alignments in one string separated by " · " — ALWAYS include Bloom's level; ADD NGSS for science content; ADD CCSS for literacy/technical skills
+  - If framework = "all": include MULTIPLE alignments in one string separated by " · " — ALWAYS include Bloom's level; ADD ALL applicable NGSS codes; ADD ALL applicable CCSS codes
+  - IMPORTANT: An objective may align to MULTIPLE standards within each framework (e.g., 2 NGSS codes + 2 CCSS codes if all genuinely apply)
   - CCSS applies across ALL disciplines: CCSS.ELA-LITERACY.RST (Reading Science & Technical Subjects), CCSS.ELA-LITERACY.WHST (Writing History/Science/Technical), CCSS.MATH for quantitative reasoning
   - Otherwise: include the most relevant single alignment (Bloom's level, NGSS code, or CCSS code)
   - Include standard codes AND complete descriptions (e.g., NGSS HS-PS1-1; CCSS.ELA-LITERACY.RST.11-12.7; CCSS.MATH.CONTENT.HSN.Q.A.3)
   - Write out FULL standard text; do NOT truncate with ellipsis (...) or abbreviate
   - If no specific standard applies, set to null
-  - Max length: 300 characters (enough for full Bloom's + NGSS/CCSS descriptions)
-  - Examples of multi-framework alignment:
-    * Science + literacy: "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation to gather evidence · CCSS.ELA-LITERACY.RST.11-12.7: Integrate quantitative or technical information"
-    * Math + science: "Bloom's: Analyze (Level 4) · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units as a way to understand problems · NGSS Science & Engineering Practice 4: Analyzing and interpreting data"
-    * Reading/writing any subject: "Bloom's: Evaluate (Level 5) · CCSS.ELA-LITERACY.WHST.11-12.1: Write arguments focused on discipline-specific content"
+  - Max length: 400 characters (to accommodate multiple standards from each framework)
+  - Examples of multi-standard alignment:
+    * Multiple NGSS + CCSS: "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation · NGSS Science & Engineering Practice 4: Analyzing and interpreting data · CCSS.ELA-LITERACY.RST.11-12.7: Integrate quantitative information · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units to understand problems"
+    * Multiple CCSS: "Bloom's: Evaluate (Level 5) · CCSS.ELA-LITERACY.WHST.11-12.1: Write arguments focused on discipline-specific content · CCSS.ELA-LITERACY.RST.11-12.9: Synthesize information from multiple sources"
+    * Science practices + content: "Bloom's: Analyze (Level 4) · NGSS HS-PS1-1: Use periodic table as a model · NGSS Crosscutting Concept: Structure and Function · CCSS.ELA-LITERACY.RST.11-12.7: Integrate technical information"
 
 OBJECTIVE COUNT REQUIREMENT:
 - There must be AT LEAST one objective per detected assessment item/question/step
