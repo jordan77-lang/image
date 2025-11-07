@@ -248,7 +248,7 @@ Examples of task-specific objectives:
     
     // Build user prompt
     const alignmentGuidance = framework === 'all'
-      ? 'Align each objective to ALL applicable standards IN THE SAME alignment field, separated by " · ": include Bloom\'s Taxonomy level AND NGSS performance expectation codes (if science-related) AND CCSS codes (if ELA/Math-related). Example: "Bloom\'s: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model... · CCSS.ELA-LITERACY.RST.11-12.7: Integrate and evaluate multiple sources". Use whichever frameworks genuinely apply; include at least Bloom\'s + one discipline code when relevant.'
+      ? 'Align each objective to ALL applicable standards IN THE SAME alignment field, separated by " · ": include Bloom\'s Taxonomy level AND NGSS performance expectation codes (if science-related) AND CCSS codes (if ELA/Math-related). Example: "Bloom\'s: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model to predict relative properties of elements · CCSS.ELA-LITERACY.RST.11-12.7: Integrate and evaluate multiple sources of information". Use whichever frameworks genuinely apply; include at least Bloom\'s + one discipline code when relevant. Write out FULL standard descriptions without truncating.'
       : framework === 'ngss' 
       ? 'Align objectives to Next Generation Science Standards (NGSS) performance expectations when possible. Include scientific practices (e.g., "analyze data," "construct explanations," "develop models").'
       : framework === 'ccss'
@@ -341,11 +341,13 @@ INSTRUCTIONS:
 8. For alignment field:
   - If framework = "all": include MULTIPLE alignments in one string separated by " · " — always include Bloom's level; add NGSS codes/descriptions for science contexts; add CCSS codes/descriptions for ELA/Math contexts
   - Otherwise: include the most relevant single alignment (Bloom's level, NGSS code, or CCSS code)
-  - Include standard codes when available (e.g., NGSS HS-PS1-1; CCSS.ELA-LITERACY.RST.11-12.7; CCSS.MATH.CONTENT.HSN.Q.A.3)
+  - Include standard codes AND complete descriptions (e.g., NGSS HS-PS1-1; CCSS.ELA-LITERACY.RST.11-12.7; CCSS.MATH.CONTENT.HSN.Q.A.3)
+  - Write out FULL standard text; do NOT truncate with ellipsis (...) or abbreviate
   - If no specific standard applies, set to null
+  - Max length: 300 characters (enough for full Bloom's + NGSS/CCSS descriptions)
   - Examples:
     * Bloom's only: "Bloom's: Analyze (Level 4)"
-    * Multiple: "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation..."
+    * Multiple: "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation to gather evidence to compare structure of substances at bulk scale"
 
 OBJECTIVE COUNT REQUIREMENT:
 - There must be AT LEAST one objective per detected assessment item/question/step

@@ -1,6 +1,6 @@
 {
   "name": "image-accessibility-netlify",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Advanced image accessibility tool with drag-and-drop, unit expansion, and AI-powered descriptions",
   "main": "netlify/functions/generate-descriptions.js",
   "scripts": {
