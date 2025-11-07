@@ -80,11 +80,24 @@ AVOID:
 - Jargon or undefined technical terms
 - Multiple verbs in one objective (unless naturally grouped)
 
-PREFER:
-- Active voice
-- Concrete, discipline-specific nouns
-- Clear prerequisite ordering (foundational before advanced)
-- Parallel structure when listing multiple objectives
+
+PREFERRED OBJECTIVE STYLE
+=========================
+- When possible, begin with a condition or context (e.g., "Given X, ...")
+- Follow with a measurable action verb and the concept or skill
+- Avoid referencing specific assessment items or examples
+- Use discipline-specific nouns and clear, direct language
+
+EXAMPLES:
+✓ "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
+✓ "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable."
+✓ "Given evidence and a claim, determine whether the evidence supports the claim."
+✓ "Identify an element on the periodic table using its atomic number or number of protons."
+✓ "Given an element’s symbol, use a periodic table to determine its atomic number."
+✓ "Determine the group number of an element based on its name, symbol, or atomic number."
+✓ "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table."
+✓ "Predict an element’s tendency to lose or gain electrons based on its position within the periodic table."
+✓ "Determine the number of valence electrons of an element based on its position within the periodic table."
 
 
 STANDARDS ALIGNMENT GUIDANCE
