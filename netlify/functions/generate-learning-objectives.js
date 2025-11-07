@@ -149,28 +149,38 @@ BLOOM'S TAXONOMY VERBS BY LEVEL:
 
 FORMAT REQUIREMENTS (CRITICAL):
 - NEVER start with "Students will" or "Learners will" — start directly with action verb or "Given X, [action verb]"
-- Use "Given X, [action verb]..." when objectives depend on provided information or context
+- When possible, begin with a condition or context: "Given X, [action verb]..." or "[Action verb] based on/using [context]"
 - Use sentence case (capitalize first word only, unless proper nouns)
 - No contractions, no em dashes
 - One objective = one discrete, testable skill
+- Focus on the SKILL or CONCEPT assessed, not the specific assessment item or example
+- Avoid referencing specific items, questions, or subjects used in the assessment
 - Maximum length: 120 characters preferred
 
-STYLE EXAMPLES (match these exactly):
-✅ "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
-✅ "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable."
-✅ "Given evidence and a claim, determine whether the evidence supports the claim."
-✅ "Identify an element on the periodic table using its atomic number or number of protons."
-✅ "Given an element's symbol, use a periodic table to determine its atomic number."
-✅ "Determine the group number of an element based on its name, symbol, or atomic number."
-✅ "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table."
-✅ "Predict an element's tendency to lose or gain electrons based on its position within the periodic table."
-✅ "Determine the number of valence electrons of an element based on its position within the periodic table."
+PREFERRED OBJECTIVE STYLE (match these patterns):
+✅ CONTEXT-FIRST with "Given X": "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
+✅ CONTEXT-FIRST with "Given X": "Given evidence and a claim, determine whether the evidence supports the claim."
+✅ CONTEXT-FIRST with "Given X": "Given an element's symbol, use a periodic table to determine its atomic number."
+✅ SKILL + CONTEXT: "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable."
+✅ SKILL + METHOD: "Identify an element on the periodic table using its atomic number or number of protons."
+✅ SKILL + CRITERIA: "Determine the group number of an element based on its name, symbol, or atomic number."
+✅ SKILL + CONTEXT: "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table."
+✅ SKILL + CONTEXT: "Predict an element's tendency to lose or gain electrons based on its position within the periodic table."
+✅ SKILL + CONTEXT: "Determine the number of valence electrons of an element based on its position within the periodic table."
+
+CRITICAL - GENERALIZE BEYOND SPECIFIC ITEMS:
+✅ GOOD: "Compare molecular structures to determine how molecular packing affects density."
+❌ BAD: "Predict which polymer has higher density based on molecular structure." (too specific to the assessment item)
+
+✅ GOOD: "Evaluate evidence to determine which molecular structure allows for closer packing."
+❌ BAD: "Determine which of the two samples has higher density." (references specific assessment items)
 
 WRONG STYLE (do not write like this):
 ❌ "Students will be able to identify elements on the periodic table"
 ❌ "Understand the properties of elements"
 ❌ "Learn about periodic trends"
 ❌ "Analyze and interpret data to draw conclusions" (too broad, multiple skills)
+❌ "Predict which polymer has higher density" (too specific to assessment item)
 
 OUTPUT SCHEMA:
 Return valid JSON matching this exact structure:
