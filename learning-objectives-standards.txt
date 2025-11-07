@@ -8,6 +8,15 @@ CORE PRINCIPLES FOR HIGH-QUALITY LEARNING OBJECTIVES
    - Use phrasing: "Students will be able to..." or "Learners will..."
    - Avoid: "Teach X," "Cover Y," "Introduce Z"
 
+6. GENERALIZE BEYOND SPECIFIC ASSESSMENT ITEMS
+   - Objectives should describe the skill or concept assessed, not the specific item, example, or subject used in the assessment
+   - Focus on the cognitive process and underlying concept
+   - Avoid referencing specific assessment items, questions, or examples directly
+   - Example:
+     ✗ "Predict which polymer has higher density based on molecular structure."
+     ✓ "Compare molecular structures to determine how molecular packing affects density."
+     ✓ "Evaluate evidence to determine which molecular structure allows for closer packing."
+
 2. MEASURABLE ACTION VERBS
    - Use observable, assessable verbs from Bloom's Taxonomy
    - Avoid vague verbs: understand, know, learn, appreciate
@@ -231,6 +240,10 @@ COMMON PITFALLS TO AVOID
 
 5. MULTIPLE SKILLS: "Read, analyze, and write about climate change"
    → FIX: Split into 3 objectives (one for each skill)
+
+7. TOO SPECIFIC TO ASSESSMENT ITEM: "Predict which polymer has higher density based on molecular structure."
+  → FIX: "Compare molecular structures to determine how molecular packing affects density."
+  (Generalize objective to focus on skill/concept, not specific item)
 
 6. ACTIVITY-BASED: "Complete a lab on titration"
    → FIX: "Perform titrations to determine the concentration of an acid with 95% accuracy"
