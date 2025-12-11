@@ -45,17 +45,38 @@ Examples:
 
 === LONG DESCRIPTION STANDARDS ===
 
-Format:
+Based on AccessiblePublishing.ca Guidelines for Extended Descriptions:
+
+Structure (General to Specific):
 - Always begin with: "This image is a [type] showing..."
-- Use plain language and short clauses
-- Emphasize educational takeaway: trend, relationship, or concept the image teaches
+- Start with a brief overview/summary of the image (1-2 sentences)
+- Then provide more specific information and details
+- Work from general concept to specific elements
+- Allow reader to understand the initial concept first and foremost
+
+Organizational Techniques (choose what works best for the image):
+- Quadrants/thirds/halves: Describe parts by position (e.g., top left, bottom right, center)
+- Compass directions: Use N, NE, S, SW, etc. (especially for maps)
+- Clock positions: Divide by hours of clock face (for images with central focus)
+- Systematic progression: For diagrams, describe step-by-step or component-by-component
+- Tables/lists: For data-heavy images, organize information in structured format
 
 Content Requirements:
+- Include title and purpose of the image for context
 - Focus on educational significance and learning objectives
+- Describe elements important to understanding the purpose and meaning
+- Reader should understand after reading once - be clear and precise
+- Can be multiple paragraphs and include lists or tables as needed
 - Use "to" for numeric ranges instead of hyphens
 - NEVER use unit abbreviations - always spell out all units in full (e.g., "milligrams per liter" not "mg/L", "degrees Celsius" not "°C", "percent" not "%")
 - Use "frequency distribution" not "bar chart" or "histogram"
 - Never restate paragraph text or captions
+
+Type-Specific Guidelines:
+- Maps: Include name/title and legend description; focus on clarity over detail; ask "What is this map telling the reader?"
+- Graphs/Charts: Provide title and purpose, describe layout (type, axes); ask "What is this graph telling the reader?"
+- Diagrams/Flowcharts: Write systematically, step-by-step; describe all components that contribute to understanding
+- Formulas/Equations: Use MathML when possible, or provide text version in alt-text (rarely need long description)
 
 === TRANSCRIBED TEXT STANDARDS ===
 
@@ -592,7 +613,17 @@ Generate exactly four sections:
 
 1. **Alt Text** (120 characters max): Brief description for screen readers
 ${specificPrompt}
-3. **Long Description**: Comprehensive description starting with "This image is a..."
+3. **Long Description**: Comprehensive extended description following this structure:
+   - START with "This image is a [type] showing..." 
+   - OVERVIEW: Begin with 1-2 sentence summary of the main purpose or concept
+   - SPECIFIC DETAILS: Then describe elements systematically using appropriate organizational technique:
+     ${imageType === 'MAP' ? '* For maps: Use compass directions or geographic regions; include title and legend description' :
+       imageType === 'GRAPH' || imageType === 'CHART' ? '* For graphs/charts: Describe layout (type, axes), then explain data patterns and trends' :
+       imageType === 'DIAGRAM' ? '* For diagrams: Describe step-by-step or component-by-component systematically' :
+       '* Choose best organization: quadrants (top-left, bottom-right), compass directions (N, SE, W), clock positions (12 o\'clock, 3 o\'clock), or systematic progression'}
+   - Focus on elements important to understanding purpose and meaning
+   - Can use multiple paragraphs, lists, or structured format as needed
+   - Ensure reader can understand after reading once
 4. **Transcribed Text**: ${imageType === 'PHOTOGRAPH' ? 
       'EXACT transcription of any visible text in the image (signs, labels, captions, etc.):\n   - Write text exactly as it appears\n   - Include all readable words, numbers, or symbols\n   - If no text is visible, write "No text visible in image"' :
       'EXACT LITERAL TRANSCRIPTION of all visible text:\n   - Write each piece of text EXACTLY as it appears\n   - If you see "10, 11, 12, 13, 14" write that, NOT "10 to 14"\n   - List every axis tick mark, data label, number individually\n   - Include all titles, legends, captions word-for-word\n   - Use line breaks to organize different text elements\n   - DO NOT summarize, interpret, or create ranges\n   - If no text is visible, write "No text visible in image"'}
