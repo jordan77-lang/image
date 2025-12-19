@@ -481,10 +481,23 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
     const responseText = completion.choices[0].message.content;
     console.log('OpenAI response received');
 
-    // Parse response
+    // Robust JSON parse with fallback trimming (models sometimes return truncated JSON)
+    const safeParseJSON = (text) => {
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        const lastBrace = text.lastIndexOf('}');
+        if (lastBrace > 0) {
+          const trimmed = text.slice(0, lastBrace + 1);
+          return JSON.parse(trimmed);
+        }
+        throw err;
+      }
+    };
+
     let result;
     try {
-      result = JSON.parse(responseText);
+      result = safeParseJSON(responseText);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
       console.error('Response text:', responseText);
