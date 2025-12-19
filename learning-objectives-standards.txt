@@ -2,44 +2,83 @@ LEARNING OBJECTIVES GENERATION STANDARDS
 =========================================
 
 CORE PRINCIPLES FOR HIGH-QUALITY LEARNING OBJECTIVES
+====================================================
+
+LEARNING OBJECTIVES AND ASSESSMENT MAPPING
+==========================================
+
+1. ONE OBJECTIVE, MANY QUESTIONS
+  - A single learning objective can and often should be addressed by more than one assessment question or task.
+  - Each objective represents a meaningful skill or concept; collect multiple pieces of evidence for that skill.
+  - Example:
+    - LO: "Analyze frequency distributions to determine whether a safety threshold is exceeded."
+    - Questions: multiple items that ask students to identify the correct distribution, read a histogram, and interpret whether a limit has been crossed.
+
+2. ONE QUESTION, POSSIBLY MULTIPLE OBJECTIVES
+  - A single assessment question may provide evidence for more than one objective, especially at higher Bloom levels.
+  - This is acceptable, but objectives should not all depend on a single item.
+  - If a question touches three or more objectives, consider splitting it into simpler questions.
+
+3. AVOID ONE-TO-ONE MAPPING
+  - Do not assume "one question = one objective."
+  - Each graded question must align to at least one objective.
+  - Each objective must be assessed by at least one question.
+  - Avoid "orphan objectives" (no questions) and "orphan questions" (no objectives).
+
+4. DESIGN FOR EVIDENCE, NOT ITEMS
+  - When generating objectives from text, focus on the underlying capability the assessment items measure.
+  - Ask: "What general skill could multiple questions reasonably test here?" not "What does this exact question say?"
+
+5. COURSE AND MODULE SCOPE
+  - For course-level objectives, write statements broad enough that several assignments or exams can provide evidence.
+  - Reserve very narrow, single-item skills for activity- or step-level objectives, not course-level outcomes.
+
+CORE PRINCIPLES FOR HIGH-QUALITY LEARNING OBJECTIVES
+====================================================
 
 1. STUDENT-CENTERED FOCUS
-   - Objectives must describe what STUDENTS will accomplish, not what instructors will teach
-   - Use phrasing: "Students will be able to..." or "Learners will..."
-   - Avoid: "Teach X," "Cover Y," "Introduce Z"
+  - Objectives must describe what students will accomplish, not what instructors will teach.
+  - Preferred phrasing: "Students will be able to..." or write the outcome starting with a verb (for example, "Analyze...", "Evaluate...").
+  - Avoid: "Teach X," "Cover Y," "Introduce Z."
+
+2. ALIGNMENT WITH ASSESSMENTS AND STANDARDS
+  - Every objective must be measurable through assessments or observable performance.
+  - A single objective can be addressed by more than one assessment question or task.
+  - Each graded question must align to at least one objective; each objective must be assessed by at least one question.
+  - When standards frameworks (NGSS, CCSS, etc.) apply, tag each objective with the relevant code(s).
+
+3. MEASURABLE ACTION VERBS
+  - Use observable, assessable verbs from Bloom's Taxonomy.
+  - Avoid vague verbs: understand, know, learn, appreciate.
+  - Prefer concrete verbs: identify, analyze, calculate, construct, design, evaluate, explain.
+
+4. SPECIFIC AND CLEAR
+  - Each objective should target one main competency or a small set of closely related micro-skills.
+  - Include conditions when relevant: "Given a dataset of groundwater samples, students will..."
+  - Include criteria when appropriate: "...within 5 percent of the correct value" or "...using appropriate units."
+  - Aim for concise statements (one sentence, ideally under 140 characters).
+
+5. APPROPRIATE SCOPE AND GRANULARITY
+  - Course-level objectives should be broad enough to require multiple weeks and multiple assessments.
+  - Module- or act-level objectives can be narrower but should still support more than one question or activity.
+  - Avoid objectives that simply restate a single, highly specific assessment item.
 
 6. GENERALIZE BEYOND SPECIFIC ASSESSMENT ITEMS
-   - Objectives should describe the skill or concept assessed, not the specific item, example, or subject used in the assessment
-   - Focus on the cognitive process and underlying concept
-   - Avoid referencing specific assessment items, questions, or examples directly
-   - Example:
-     ✗ "Predict which polymer has higher density based on molecular structure."
-     ✓ "Compare molecular structures to determine how molecular packing affects density."
-     ✓ "Evaluate evidence to determine which molecular structure allows for closer packing."
+  - Objectives should describe the skill or concept, not the specific example or question.
+  - Focus on the underlying cognitive process and content, not particular names, numbers, or stories.
+  - Example:
+    ✗ "Predict which polymer has higher density based on molecular structure."
+    ✓ "Compare molecular structures to determine how molecular packing affects density."
+    ✓ "Evaluate evidence to determine which molecular structure allows for closer packing."
 
-2. MEASURABLE ACTION VERBS
-   - Use observable, assessable verbs from Bloom's Taxonomy
-   - Avoid vague verbs: understand, know, learn, appreciate
-   - Prefer concrete verbs: identify, analyze, calculate, design, evaluate, explain
-
-3. SPECIFIC AND CLEAR
-   - Each objective should target ONE specific competency
-   - Include conditions when relevant: "Given X, students will..."
-   - Include criteria when measurable: "...with 90% accuracy"
-   - Keep objectives concise (under 140 characters preferred)
-
-4. ABCD FORMAT (when appropriate)
-   A = Audience (who: students, learners)
-   B = Behavior (action verb + what they will do)
-   C = Condition (context, tools, or resources provided)
-   D = Degree (criteria for success)
-
-5. SMART CRITERIA
-   S = Specific (targets clear competency)
-   M = Measurable (can be assessed or observed)
-   A = Achievable (realistic for level and timeframe)
-   R = Results-oriented (focuses on learning outcome)
-   T = Time-bound (if applicable)
+7. SMART AND ABCD (WHEN RELEVANT)
+  - Use SMART thinking to check objectives:
+    - Specific, Measurable, Achievable, Results-oriented, Time-bound (if appropriate).
+  - Use the ABCD frame when conditions and criteria matter:
+    - A = Audience (students, learners)
+    - B = Behavior (action verb + outcome)
+    - C = Condition (context, tools, resources)
+    - D = Degree (accuracy or performance standard)
 
 
 BLOOM'S TAXONOMY - COGNITIVE LEVELS
@@ -113,6 +152,8 @@ NGSS (Next Generation Science Standards):
 - Integrate three dimensions: practices, core ideas, crosscutting concepts
 - Format: "Use a model to..." "Analyze data to..." "Construct an explanation..."
 - Example: "NGSS HS-PS1-1: Use the periodic table as a model to predict the relative properties of elements"
+- When aligning to NGSS, cite the performance expectation code (for example, HS-PS1-1) and paraphrase the intent in your own words.
+- Do not reproduce long blocks of standards text inside the objective. Use the objective for student-facing language and the standard code for alignment metadata.
 
 COMMON CORE STATE STANDARDS (CCSS):
 - Use for ELA and Mathematics
@@ -234,6 +275,8 @@ ORDERING:
 - Foundational objectives first (prerequisite knowledge)
 - Application and higher-order objectives later
 - Cognitive progression: remember → understand → apply → analyze → evaluate → create
+- For course-level documents, generate a small, coherent set of objectives (for example, 4 to 12) that cover the major skills and concepts.
+- Merge near-duplicate outcomes rather than producing many tiny objectives that differ only in wording.
 
 
 COMMON PITFALLS TO AVOID
@@ -254,12 +297,11 @@ COMMON PITFALLS TO AVOID
 5. MULTIPLE SKILLS: "Read, analyze, and write about climate change"
    → FIX: Split into 3 objectives (one for each skill)
 
-7. TOO SPECIFIC TO ASSESSMENT ITEM: "Predict which polymer has higher density based on molecular structure."
-  → FIX: "Compare molecular structures to determine how molecular packing affects density."
-  (Generalize objective to focus on skill/concept, not specific item)
+6. TOO SPECIFIC TO ONE ITEM
+  → FIX: Rewrite the objective so that it describes the general skill (for example, "Compare molecular structures to determine how packing affects density"), not a single question or example.
 
-6. ACTIVITY-BASED: "Complete a lab on titration"
-   → FIX: "Perform titrations to determine the concentration of an acid with 95% accuracy"
+7. ACTIVITY-BASED: "Complete a lab on titration"
+  → FIX: "Perform titrations to determine the concentration of an acid with 95% accuracy"
 
 
 END OF STANDARDS DOCUMENT

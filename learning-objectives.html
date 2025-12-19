@@ -327,11 +327,11 @@
                     <input 
                         type="file" 
                         id="contentFile" 
-                        accept=".txt,.md,.doc,.docx,.pdf"
+                        accept=".txt,.md,.pdf"
                         style="padding: 8px;"
                     >
                     <small style="color: #666; display: block; margin-top: 5px;">
-                        Supported: .txt, .md, .pdf, .doc, .docx - File will replace text area content
+                        Supported: .txt, .md, .pdf - text is extracted; images in PDFs are ignored
                     </small>
                 </div>
                 
@@ -501,6 +501,7 @@
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" integrity="sha512-Hk9X3FqQzszbmWzxubUANe0yoynZMhUlCT3VkOITkkpFmS6r30YIOCQM7DDDeWGPAHDq6LaNruM3aMcMBXNteQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="lo-app.js"></script>
     <script>
         // Populate footer with deployment version and timestamp

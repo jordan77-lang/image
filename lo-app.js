@@ -22,24 +22,113 @@ function clearForm() {
     document.getElementById('errorMessage').classList.add('hidden');
 }
 
-// Handle file upload
+// Handle file upload with PDF-aware extraction
 document.getElementById('contentFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const content = event.target.result;
-        document.getElementById('contentText').value = content;
+
+    const textarea = document.getElementById('contentText');
+    const fileExtension = '.' + (file.name.split('.').pop() || '').toLowerCase();
+    const supportedTypes = ['.txt', '.md', '.pdf'];
+
+    if (!supportedTypes.includes(fileExtension)) {
+        showError('Unsupported file type. Please upload a PDF, TXT, or MD file.');
+        e.target.value = '';
+        return;
+    }
+
+    try {
+        let content;
+        if (fileExtension === '.pdf') {
+            textarea.value = 'Processing PDF... extracting text (images are ignored).';
+            content = await extractTextFromPDF(file);
+        } else {
+            content = await readTextFile(file);
+        }
+
+        textarea.value = content;
         showToast(`File "${file.name}" loaded successfully!`);
-    };
-    
-    reader.onerror = () => {
-        showError('Failed to read file. Please try again.');
-    };
-    
-    reader.readAsText(file);
+    } catch (err) {
+        console.error('File load error:', err);
+        showError(err.message || 'Failed to read file. Please try again.');
+        textarea.value = '';
+    }
 });
+
+// Read text-based files
+function readTextFile(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => resolve(event.target.result);
+        reader.onerror = () => reject(new Error('Failed to read file. Please try again.'));
+        reader.readAsText(file);
+    });
+}
+
+// Extract text from PDF using pdf.js while ignoring images
+async function extractTextFromPDF(file) {
+    if (typeof pdfjsLib === 'undefined') {
+        throw new Error('PDF processing library failed to load. Please refresh and try again.');
+    }
+
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+    let fullText = '';
+
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent({ normalizeWhitespace: true });
+
+        // Rebuild text with line and word spacing inferred from coordinates
+        let lastY = null;
+        let lastX = null;
+        let currentLine = '';
+        const lines = [];
+        const yTolerance = 5; // pixels
+        const xTolerance = 4; // pixels between words
+
+        textContent.items.forEach((item) => {
+            if (!item.str || !item.str.trim()) return; // ignore empty runs and non-text
+
+            const [ , , , , x, y ] = item.transform; // transform matrix stores x/y
+            if (lastY !== null && Math.abs(y - lastY) > yTolerance) {
+                if (currentLine.trim()) lines.push(currentLine.trim());
+                currentLine = '';
+                lastX = null;
+            } else if (lastX !== null && x - lastX > xTolerance) {
+                currentLine += ' ';
+            }
+
+            currentLine += item.str.replace(/\s+/g, ' ');
+            lastY = y;
+
+            // Advance x by width when available to better space words
+            const advance = item.width || 0;
+            lastX = x + advance;
+        });
+
+        if (currentLine.trim()) lines.push(currentLine.trim());
+        const pageText = lines.join('\n');
+        if (pageText.trim()) {
+            fullText += pageText + '\n\n';
+        }
+    }
+
+    const cleaned = fullText
+        .replace(/[\u2010-\u2014]/g, '-')
+        .replace(/\s+\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+    if (!cleaned) {
+        throw new Error('No selectable text found in this PDF. It may be image-only or encrypted.');
+    }
+
+    return cleaned;
+}
 
 // Handle form submission
 document.getElementById('loForm').addEventListener('submit', async (e) => {

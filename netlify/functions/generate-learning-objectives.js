@@ -12,12 +12,67 @@ const openai = new OpenAI({
 const STANDARDS_PATH = path.join(__dirname, '..', '..', 'learning-objectives-standards.txt');
 let STANDARDS_CONTENT = '';
 
+// Load NGSS HS performance expectations
+const NGSS_PATH = path.join(__dirname, '..', '..', 'data', 'ngss-pe-hs.json');
+let NGSS_PE = [];
+
 try {
   STANDARDS_CONTENT = fs.readFileSync(STANDARDS_PATH, 'utf-8');
 } catch (error) {
   console.warn('Warning: learning-objectives-standards.txt not found. Using default guidelines.');
   STANDARDS_CONTENT = 'Use Bloom\'s Taxonomy verbs and create measurable, student-centered objectives.';
 }
+
+try {
+  NGSS_PE = JSON.parse(fs.readFileSync(NGSS_PATH, 'utf-8'));
+} catch (error) {
+  console.warn('Warning: ngss-pe-hs.json not found or unreadable. NGSS auto-alignment will be skipped.');
+  NGSS_PE = [];
+}
+
+// Simple tokenization and cosine similarity for NGSS matching
+const tokenize = (text) => (text || '')
+  .toLowerCase()
+  .replace(/[^a-z0-9\s]/g, ' ')
+  .split(/\s+/)
+  .filter(Boolean);
+
+const toVector = (tokens) => {
+  const vec = Object.create(null);
+  tokens.forEach(t => { vec[t] = (vec[t] || 0) + 1; });
+  return vec;
+};
+
+const cosine = (a, b) => {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (const k in a) {
+    const av = a[k];
+    normA += av * av;
+    if (b[k]) dot += av * b[k];
+  }
+  for (const k in b) {
+    const bv = b[k];
+    normB += bv * bv;
+  }
+  if (!normA || !normB) return 0;
+  return dot / (Math.sqrt(normA) * Math.sqrt(normB));
+};
+
+const getTopNgssMatches = (text, topN = 3, minScore = 0.08) => {
+  if (!NGSS_PE.length || !text) return [];
+  const vec = toVector(tokenize(text));
+  const scored = NGSS_PE.map(pe => {
+    const peVec = toVector(tokenize(pe.summary + ' ' + pe.code));
+    return { ...pe, score: cosine(vec, peVec) };
+  }).filter(item => item.score >= minScore);
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, topN)
+    .map(({ code, summary, score }) => ({ code, summary, score }));
+};
 
 exports.handler = async (event, context) => {
   // CORS headers
@@ -453,6 +508,22 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
     result.metadata.framework = framework;
     result.metadata.source_file_ids = [];
     result.metadata.generated_at = new Date().toISOString();
+
+    // Auto-append NGSS alignments for high school using lightweight similarity
+    if (framework === 'all' || framework === 'ngss') {
+      result.learning_objectives = result.learning_objectives.map((lo) => {
+        const matches = getTopNgssMatches(lo.objective_text, 3, 0.08);
+        if (matches.length) {
+          const ngssString = matches.map(m => `${m.code}: ${m.summary}`).join(' · ');
+          if (lo.alignment && lo.alignment.trim()) {
+            lo.alignment = `${lo.alignment} · ${ngssString}`;
+          } else {
+            lo.alignment = ngssString;
+          }
+        }
+        return lo;
+      });
+    }
 
     // Return successful response
     return {
