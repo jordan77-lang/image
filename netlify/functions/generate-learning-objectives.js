@@ -172,15 +172,19 @@ exports.handler = async (event, context) => {
     };
 
     const assessedItemCount = countAssessedItems();
+    const MAX_OBJECTIVES = 12; // keep responses under Netlify timeout
     let targetNumObjectives;
     if (num_objectives === 'auto') {
-      targetNumObjectives = assessedItemCount > 0 ? Math.min(assessedItemCount, 30) : 5;
+      if (assessedItemCount > 0) {
+        targetNumObjectives = Math.min(Math.max(assessedItemCount, 4), MAX_OBJECTIVES);
+      } else {
+        targetNumObjectives = 5;
+      }
     } else {
       const requested = parseInt(num_objectives) || 5;
-      // Enforce minimum equal to assessed items
-      targetNumObjectives = Math.max(requested, Math.min(assessedItemCount || 0, 30));
+      targetNumObjectives = Math.min(Math.max(requested, 1), MAX_OBJECTIVES);
     }
-    console.log(`Detected ~${assessedItemCount} assessed items; generating ${targetNumObjectives} objectives`);
+    console.log(`Detected ~${assessedItemCount} assessed items; generating ${targetNumObjectives} objectives (capped at ${MAX_OBJECTIVES})`);
 
     // Build system prompt with DSL standards
   const systemPrompt = `You are an expert curriculum-authoring assistant specializing in learning objectives design.
@@ -361,7 +365,7 @@ ${scopeGuidance}
 
 CONTENT TO ANALYZE:
 """
-${content_text.substring(0, 8000)}
+${content_text.substring(0, 6000)}
 """
 
 CRITICAL: Before generating objectives, identify ALL student tasks in the content:
@@ -445,8 +449,9 @@ INSTRUCTIONS:
     * "Bloom's: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units to understand problems"
 
 OBJECTIVE COUNT REQUIREMENT:
-- There must be AT LEAST one objective per detected assessment item/question/step
-- Generate EXACTLY ${targetNumObjectives} objectives such that each detected item is represented by at least one objective
+- Generate EXACTLY ${targetNumObjectives} objectives TOTAL
+- If multiple assessment items target the same skill, CLUSTER them into one objective that covers the shared capability
+- Ensure every major task/skill is covered, but keep the list concise (no more than ${targetNumObjectives})
 
 OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning objectives, ordered by instructional sequence.`;
 
@@ -459,7 +464,7 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
         { role: 'user', content: userPrompt }
       ],
       temperature: 0.3, // Low temperature for consistency
-      max_tokens: 3200,
+      max_tokens: 2400,
       response_format: { type: 'json_object' } // Force JSON output
     });
 
