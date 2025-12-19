@@ -28,6 +28,10 @@ document.getElementById('contentFile').addEventListener('change', async (e) => {
     if (!file) return;
 
     const textarea = document.getElementById('contentText');
+    const progress = document.getElementById('contentFileProgress');
+    const progressLabel = document.getElementById('contentFileProgressLabel');
+    const progressFill = document.getElementById('contentFileProgressFill');
+
     const fileExtension = '.' + (file.name.split('.').pop() || '').toLowerCase();
     const supportedTypes = ['.txt', '.md', '.pdf'];
 
@@ -37,14 +41,27 @@ document.getElementById('contentFile').addEventListener('change', async (e) => {
         return;
     }
 
+    const showProgress = () => { if (progress) progress.style.display = 'block'; };
+    const hideProgress = () => { if (progress) progress.style.display = 'none'; };
+    const setProgress = (percent, label) => {
+        if (progressFill) progressFill.style.width = `${Math.min(Math.max(percent, 0), 100)}%`;
+        if (progressLabel) progressLabel.textContent = label;
+    };
+
     try {
+        showProgress();
+        setProgress(5, 'Preparing file...');
+
         let content;
         if (fileExtension === '.pdf') {
             textarea.value = 'Processing PDF... extracting text (images are ignored).';
-            content = await extractTextFromPDF(file);
+            content = await extractTextFromPDF(file, setProgress);
         } else {
             content = await readTextFile(file);
         }
+
+        setProgress(100, 'Done');
+        setTimeout(hideProgress, 400);
 
         textarea.value = content;
         showToast(`File "${file.name}" loaded successfully!`);
@@ -52,6 +69,7 @@ document.getElementById('contentFile').addEventListener('change', async (e) => {
         console.error('File load error:', err);
         showError(err.message || 'Failed to read file. Please try again.');
         textarea.value = '';
+        hideProgress();
     }
 });
 
@@ -77,7 +95,7 @@ function looksLikeGibberish(text) {
 }
 
 // Extract text from PDF using pdf.js while ignoring images
-async function extractTextFromPDF(file) {
+async function extractTextFromPDF(file, setProgress) {
     if (typeof pdfjsLib === 'undefined') {
         throw new Error('PDF processing library failed to load. Please refresh and try again.');
     }
@@ -92,7 +110,17 @@ async function extractTextFromPDF(file) {
         throw new Error('This file does not look like a valid PDF. Please upload a real PDF or a text/markdown file.');
     }
 
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+    if (setProgress) {
+        loadingTask.onProgress = ({ loaded, total }) => {
+            if (!total) return;
+            const pct = Math.round((loaded / total) * 50); // first half while downloading
+            setProgress(pct, `Loading PDF... ${pct}%`);
+        };
+    }
+
+    const pdf = await loadingTask.promise;
+    if (setProgress) setProgress(55, 'Parsing pages...');
 
     let fullText = '';
 
@@ -132,6 +160,11 @@ async function extractTextFromPDF(file) {
         const pageText = lines.join('\n');
         if (pageText.trim()) {
             fullText += pageText + '\n\n';
+        }
+
+        if (setProgress) {
+            const pct = 55 + Math.round((pageNum / pdf.numPages) * 40); // use 40% for page parsing
+            setProgress(pct, `Extracting text... page ${pageNum} of ${pdf.numPages}`);
         }
     }
 
