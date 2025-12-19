@@ -8,7 +8,11 @@
 
 # Ensure package.json is bundled into functions so version endpoint can read it
 [functions]
-  included_files = ["package.json"]
+  included_files = [
+    "package.json",
+    "learning-objectives-standards.txt",
+    "data/ngss-pe-hs.json"
+  ]
 
 [[redirects]]
   from = "/api/*"
