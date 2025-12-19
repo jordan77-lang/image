@@ -65,6 +65,17 @@ function readTextFile(file) {
     });
 }
 
+// Quick check for binary/gibberish output so we can fail fast instead of pasting unreadable text
+function looksLikeGibberish(text) {
+    if (!text) return true;
+    const total = text.length;
+    const replacementCount = (text.match(/\uFFFD/g) || []).length;
+    const controlCount = (text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g) || []).length;
+    const longGarbageRun = /�{3,}/.test(text);
+    const garbageRatio = (replacementCount + controlCount) / total;
+    return longGarbageRun || garbageRatio > 0.05;
+}
+
 // Extract text from PDF using pdf.js while ignoring images
 async function extractTextFromPDF(file) {
     if (typeof pdfjsLib === 'undefined') {
@@ -74,13 +85,20 @@ async function extractTextFromPDF(file) {
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
     const arrayBuffer = await file.arrayBuffer();
+
+    // Quick signature check to avoid reading non-PDFs as binary text
+    const asciiHeader = new TextDecoder('ascii', { fatal: false }).decode(arrayBuffer.slice(0, 8));
+    if (!asciiHeader.includes('%PDF')) {
+        throw new Error('This file does not look like a valid PDF. Please upload a real PDF or a text/markdown file.');
+    }
+
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
     let fullText = '';
 
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent({ normalizeWhitespace: true });
+        const textContent = await page.getTextContent({ normalizeWhitespace: true, disableCombineTextItems: false });
 
         // Rebuild text with line and word spacing inferred from coordinates
         let lastY = null;
@@ -125,6 +143,10 @@ async function extractTextFromPDF(file) {
 
     if (!cleaned) {
         throw new Error('No selectable text found in this PDF. It may be image-only or encrypted.');
+    }
+
+    if (looksLikeGibberish(cleaned)) {
+        throw new Error('The PDF text looks corrupted or image-only. Please run OCR or upload a text-based PDF.');
     }
 
     return cleaned;

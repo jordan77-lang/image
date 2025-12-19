@@ -344,6 +344,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Quick check for unreadable/binary output so we can give a clear message instead of pasting gibberish
+    function looksLikeGibberish(text) {
+        if (!text) return true;
+        const total = text.length;
+        const replacementCount = (text.match(/\uFFFD/g) || []).length;
+        const controlCount = (text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g) || []).length;
+        const longGarbageRun = /�{3,}/.test(text);
+        const garbageRatio = (replacementCount + controlCount) / total;
+        return longGarbageRun || garbageRatio > 0.05;
+    }
+
     // Extract text from PDF file
     async function extractTextFromPDF(file) {
         return new Promise((resolve, reject) => {
@@ -356,23 +367,43 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     const arrayBuffer = e.target.result;
-                    const pdf = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+
+                    // Sanity-check header so non-PDF files with .pdf extension don't get decoded as binary text
+                    const asciiHeader = new TextDecoder('ascii', { fatal: false }).decode(arrayBuffer.slice(0, 8));
+                    if (!asciiHeader.includes('%PDF')) {
+                        reject(new Error('This file does not look like a valid PDF. Please upload a real PDF or a text/markdown file.'));
+                        return;
+                    }
+
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
                     
                     let fullText = '';
                     
                     // Extract text from each page
                     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                         const page = await pdf.getPage(pageNum);
-                        const textContent = await page.getTextContent();
+                        const textContent = await page.getTextContent({ normalizeWhitespace: true });
                         const pageText = textContent.items.map(item => item.str).join(' ');
-                        fullText += pageText + '\n\n';
+                        if (pageText.trim()) fullText += pageText.trim() + '\n\n';
                     }
                     
-                    if (fullText.trim().length === 0) {
-                        reject(new Error('No text found in PDF. The PDF might be image-based or encrypted.'));
-                    } else {
-                        resolve(fullText.trim());
+                    const cleaned = fullText
+                        .replace(/[\u2010-\u2014]/g, '-')
+                        .replace(/\s+\n/g, '\n')
+                        .replace(/\n{3,}/g, '\n\n')
+                        .trim();
+
+                    if (!cleaned) {
+                        reject(new Error('No selectable text found in this PDF. It may be image-only or encrypted.'));
+                        return;
                     }
+
+                    if (looksLikeGibberish(cleaned)) {
+                        reject(new Error('The PDF text looks corrupted or image-only. Please run OCR or upload a text-based PDF.'));
+                        return;
+                    }
+
+                    resolve(cleaned);
                     
                 } catch (error) {
                     reject(new Error('Failed to extract text from PDF: ' + error.message));
