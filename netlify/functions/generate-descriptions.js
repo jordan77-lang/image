@@ -293,15 +293,15 @@ function getClient() {
 // Comprehensive unit abbreviation detection and expansion for accessibility
 
 const UNIT_ABBREVS = [
-  'mg/L','µg/L','μg/L','g/L','mol/L','mmol/L','M','mM','mol kg-1',
-  'mg','g','kg','µg','μg',
-  'mL','L','cm3','cm^3','cc',
-  'kPa','Pa','atm','bar','J','J/mol','kJ','kJ/mol',
-  'µS/cm','μS/cm','mS/cm','S/m','V','mV','mA',
-  'mm','cm','km','µm','μm','nm','Å',
-  '°C','K','min','ms','μs','µs','m s-1','m/s',
-  '%','ppm','ppb','ppt',
-  'N','Pa s','W','Hz','mol','eq','g mol-1','kg m-3','kg/m3'
+  'mg/L', 'µg/L', 'μg/L', 'g/L', 'mol/L', 'mmol/L', 'M', 'mM', 'mol kg-1',
+  'mg', 'g', 'kg', 'µg', 'μg',
+  'mL', 'L', 'cm3', 'cm^3', 'cc',
+  'kPa', 'Pa', 'atm', 'bar', 'J', 'J/mol', 'kJ', 'kJ/mol',
+  'µS/cm', 'μS/cm', 'mS/cm', 'S/m', 'V', 'mV', 'mA',
+  'mm', 'cm', 'km', 'µm', 'μm', 'nm', 'Å',
+  '°C', 'K', 'min', 'ms', 'μs', 'µs', 'm s-1', 'm/s',
+  '%', 'ppm', 'ppb', 'ppt',
+  'N', 'Pa s', 'W', 'Hz', 'mol', 'eq', 'g mol-1', 'kg m-3', 'kg/m3'
 ];
 
 const EXPAND_MAP = {
@@ -365,7 +365,7 @@ const EXPAND_MAP = {
 };
 
 function normalizeTextForMatch(text) {
-  return (text || '').replace(/\u00A0/g,' ').toLowerCase();
+  return (text || '').replace(/\u00A0/g, ' ').toLowerCase();
 }
 
 function containsUnitAbbrev(text) {
@@ -377,55 +377,55 @@ function containsUnitAbbrev(text) {
 function expandUnitsInText(text) {
   if (!text) return text;
   let out = text;
-  
+
   Object.keys(EXPAND_MAP).forEach(abbr => {
-    const safe = abbr.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    
+    const safe = abbr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
     // Smart context-aware replacement to avoid false positives
     const contextRegex = new RegExp('\\b' + safe + '\\b', 'g');
-    
+
     out = out.replace(contextRegex, (match, offset, string) => {
       const beforeContext = string.substring(Math.max(0, offset - 20), offset).toLowerCase();
       const afterContext = string.substring(offset + match.length, Math.min(string.length, offset + match.length + 20)).toLowerCase();
-      
+
       // Don't expand single letters that are clearly labels
       if (match === 'A' && (beforeContext.includes('labeled') || beforeContext.includes('label') || afterContext.includes('labeled') || afterContext.includes('label'))) {
         return match; // Keep as label
       }
-      
+
       if (match === 'C' && (beforeContext.includes('labeled') || beforeContext.includes('label') || afterContext.includes('labeled') || afterContext.includes('label') || beforeContext.includes('cuvette'))) {
         return match; // Keep as label
       }
-      
+
       // Don't expand if it appears to be part of a word or abbreviation that's not a unit
       if (match === 'A' && (beforeContext.includes('amp') || afterContext.includes('mp'))) {
         return match; // Likely part of "amps" word being formed incorrectly
       }
-      
+
       // For numerical contexts, be more confident about unit expansion
       if (/\d/.test(beforeContext) || /\d/.test(afterContext)) {
         return EXPAND_MAP[abbr];
       }
-      
+
       // For temperature contexts with numbers, expand C
       if (match === 'C' && /temperature|°|degrees?/i.test(beforeContext + afterContext)) {
         return EXPAND_MAP[abbr];
       }
-      
+
       // Default: expand if it seems like a measurement context
       if (/(pH|level|solution|concentration|volume|measurement)/i.test(beforeContext + afterContext)) {
         return EXPAND_MAP[abbr];
       }
-      
+
       // Conservative: don't expand ambiguous single letters
       if (match.length === 1) {
         return match;
       }
-      
+
       return EXPAND_MAP[abbr];
     });
   });
-  
+
   return out;
 }
 
@@ -442,12 +442,12 @@ async function askModelForExpansion(client, finalImageData, suspectSnippet) {
     const instruction = `You are a careful accessibility assistant. A figure or caption contains the snippet: "${suspectSnippet}".
 Provide a short, conservative expansion for the unit/abbreviation found suitable for screen-reader friendly alt text.
 If confident the abbreviation is a standard unit, return only the expansion (for example, "kilopascals"). If not confident, return "UNKNOWN". Do not add extra commentary.`;
-    
+
     const resp = await client.chat.completions.create({
       model: 'gpt-4o',
       messages: [
-        { 
-          role: 'user', 
+        {
+          role: 'user',
           content: [
             { type: 'text', text: instruction },
             { type: 'image_url', image_url: { url: finalImageData } }
@@ -457,7 +457,7 @@ If confident the abbreviation is a standard unit, return only the expansion (for
       max_tokens: 40,
       temperature: 0.0
     });
-    
+
     const text = (resp.choices[0].message.content || '').trim();
     if (!text) return { success: false, suggestion: null };
     if (text.toUpperCase() === 'UNKNOWN') return { success: false, suggestion: null };
@@ -472,7 +472,7 @@ If confident the abbreviation is a standard unit, return only the expansion (for
 exports.handler = async (event, context) => {
   console.log('🚨 FUNCTION CALLED - Structured Outputs v3.0');
   console.log('Deployment timestamp:', new Date().toISOString());
-  
+
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -499,7 +499,7 @@ exports.handler = async (event, context) => {
 
   try {
     const { image, imageData, context, referenceDocument } = JSON.parse(event.body);
-    
+
     // Handle both parameter names for image data
     const finalImageData = image || imageData;
 
@@ -548,15 +548,15 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
           },
           altText: {
             type: "string",
-            description: "Concise description for screen readers. MAX 120 CHARACTERS. NO formatting. Spell out all units."
+            description: "Concise description for screen readers. MAX 120 CHARACTERS. NO formatting. Spell out all units. Focus on the VISUAL REPRESENTATION (e.g., 'Chemical structure diagram...' or 'Bar chart showing...') rather than just the topic."
           },
           longDescription: {
             type: "string",
-            description: "Comprehensive structure: 'This image is a [type] showing...' followed by Overview and Specific Details. Spell out all units."
+            description: "Comprehensive STRUCTURAL description. Do NOT just explain the science; describe the IMAGE. Describe lines, shapes, representations (2D/3D), colors, layout, and how elements are connected. For chemistry: describe atoms (spheres/labels), bonds (lines), and notation (brackets). USE 'This image is a [type] showing...' syntax."
           },
           figureDescription: {
             type: "string",
-            description: "Kroodsma-style interpretive caption. 1-3 sentences. MUST start with the main scientific message/takeaway. DO NOT start with 'Figure X' or 'This figure'."
+            description: "Kroodsma-style interpretive caption. 1-3 sentences. MUST start with the main scientific message/takeaway. This is where you explain the MEANING. DO NOT start with 'Figure X'."
           },
           transcribedText: {
             type: "string",
@@ -570,7 +570,7 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
 
     const client = getClient();
     console.log('🚀 Sending request to OpenAI with JSON Schema...');
-    
+
     const response = await client.chat.completions.create({
       model: 'gpt-4o',
       messages: [
@@ -581,9 +581,9 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
         {
           role: 'user',
           content: [
-            { 
-              type: 'image_url', 
-              image_url: { url: finalImageData } 
+            {
+              type: 'image_url',
+              image_url: { url: finalImageData }
             }
           ]
         }
@@ -617,7 +617,7 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
 
     // ====================== UNIT EXPANSION & QA SYSTEM ======================
     console.log('🔧 Starting unit expansion and QA processing...');
-    
+
     // Initialize QA flags
     sections.altTextAutoFixed = false;
     sections.longDescriptionAutoFixed = false;
@@ -635,21 +635,21 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
         sections.altTextAutoFixed = (sections.altText !== before);
         console.log('✅ Alt text auto-expanded known units.');
       }
-      
+
       if (likelyHasUnknownAbbrev(sections.altText)) {
         sections.unknownAbbrevDetected = true;
         const suspectSnippet = sections.altText.match(/([A-Za-z\u00B5\u03BC]{1,4}[\/\^°%]?[A-Za-z0-9\/\^°%]{0,8})/i);
         const snippet = suspectSnippet ? suspectSnippet[0] : null;
-        
+
         if (snippet) {
-           const suggestionObj = await askModelForExpansion(getClient(), finalImageData, snippet);
-           if (suggestionObj.success && suggestionObj.suggestion) {
-             sections.altText = sections.altText.replace(new RegExp(snippet.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g'), suggestionObj.suggestion);
-             sections.altTextAutoFixed = true;
-             sections.unknownAbbrevSuggestions.push({ snippet, suggestion: suggestionObj.suggestion });
-           } else {
-             sections.altTextNeedsReview = true;
-           }
+          const suggestionObj = await askModelForExpansion(getClient(), finalImageData, snippet);
+          if (suggestionObj.success && suggestionObj.suggestion) {
+            sections.altText = sections.altText.replace(new RegExp(snippet.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), suggestionObj.suggestion);
+            sections.altTextAutoFixed = true;
+            sections.unknownAbbrevSuggestions.push({ snippet, suggestion: suggestionObj.suggestion });
+          } else {
+            sections.altTextNeedsReview = true;
+          }
         }
       }
     }
@@ -673,7 +673,7 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
 
     sections.transcribedTextVerbatim = true;
     sections.altTextTooLong = sections.altText.length > 120;
-    
+
     if (sections.altTextTooLong) {
       console.warn(`⚠️ Alt text is ${sections.altText.length} chars (limit 120).`);
     }
@@ -718,10 +718,10 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
 
   } catch (error) {
     console.error('Error:', error);
-    
+
     let errorMessage = 'An error occurred processing your request';
     let statusCode = 500;
-    
+
     if (error.message === 'MISSING_API_KEY') {
       errorMessage = 'OpenAI API key not configured';
       statusCode = 500;
@@ -732,16 +732,16 @@ ${hasEducationalContext ? `USER CONTEXT: ${context}\n\nCRITICAL: You MUST use th
       errorMessage = 'OpenAI API quota exceeded';
       statusCode = 429;
     } else if (error.code === 'context_length_exceeded') {
-        errorMessage = 'Image or context is too large';
-        statusCode = 400;
+      errorMessage = 'Image or context is too large';
+      statusCode = 400;
     }
 
     return {
       statusCode,
       headers,
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         error: errorMessage,
-        details: error.message 
+        details: error.message
       }),
     };
   }
