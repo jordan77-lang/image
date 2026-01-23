@@ -1,6 +1,6 @@
 // Main application logic for the accessibility tool
 console.log('🚀 App.js loading...');
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('✅ DOM loaded, initializing app...');
     // Configuration - Auto-detect local vs production
     const API_CONFIG = {
@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ? 'http://localhost:8888/.netlify/functions' // Local Netlify Dev
             : 'https://image-accessibility-tool.netlify.app/.netlify/functions', // Production
     };
-    
+
     // DOM elements
     const imageUpload = document.getElementById('image-upload');
     const contextInput = document.getElementById('context-input');
@@ -89,10 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleDrop(e) {
         const dt = e.dataTransfer;
         const files = dt.files;
-        
+
         if (files && files.length > 0) {
             const file = files[0];
-            
+
             // Validate it's an image file
             if (file.type.startsWith('image/')) {
                 // Update the file input and trigger the upload
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         fileInput.files = dataTransfer.files;
-                        
+
                         // Trigger the handleImageUpload function directly
                         handleImageUpload({ target: { files: [file] } });
                     } catch (error) {
@@ -158,14 +158,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleContextDrop(e) {
         const dt = e.dataTransfer;
         const files = dt.files;
-        
+
         if (files && files.length > 0) {
             const file = files[0];
-            
+
             // Validate it's a supported context file
             const supportedTypes = ['.txt', '.md', '.pdf'];
             const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
-            
+
             if (supportedTypes.includes(fileExtension) || file.type === 'text/plain' || file.type === 'application/pdf') {
                 // Update the file input and trigger the upload
                 const fileInput = document.getElementById('context-file-upload');
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const dataTransfer = new DataTransfer();
                         dataTransfer.items.add(file);
                         fileInput.files = dataTransfer.files;
-                        
+
                         // Trigger the handleContextFileUpload function
                         handleContextFileUpload({ target: { files: [file] } });
                     } catch (error) {
@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (file.size > 10 * 1024 * 1024) { // 10MB limit
                 throw new Error('File size too large. Please select an image under 10MB.');
             }
-            
+
             // Update progress
             if (progressIndicator) {
                 if (progressMessage) progressMessage.textContent = 'Processing image...';
@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
-            
+
             // Update progress
             if (progressIndicator) {
                 if (progressMessage) progressMessage.textContent = 'Creating preview...';
@@ -242,19 +242,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Show preview
             showImagePreview(currentImage, file.name);
-            
+
             // Complete progress
             if (progressIndicator) {
                 if (progressMessage) progressMessage.textContent = 'Image ready!';
                 if (progressPercentage) progressPercentage.textContent = '100%';
                 if (progressFill) progressFill.style.width = '100%';
-                
+
                 // Hide progress bar after a short delay
                 setTimeout(() => {
                     progressIndicator.style.display = 'none';
                 }, 1500);
             }
-            
+
             // Enable generate button
             if (generateBtn) {
                 generateBtn.disabled = false;
@@ -266,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (progressIndicator) {
                 progressIndicator.style.display = 'none';
             }
-            
+
             showError(error.message);
             currentImage = null;
             if (generateBtn) {
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             let content;
-            
+
             // Handle different file types
             if (fileExtension === '.pdf') {
                 content = await extractTextFromPDF(file);
@@ -315,12 +315,12 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             contextFileContent = content;
-            
+
             // Hide progress indicator and show preview
             if (progressIndicator) {
                 progressIndicator.style.display = 'none';
             }
-            
+
             showContextFilePreview(file, content);
 
         } catch (error) {
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (progressIndicator) {
                 progressIndicator.style.display = 'none';
             }
-            
+
             showError('Context file upload failed: ' + error.message);
             contextFileUpload.value = '';
         }
@@ -359,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function extractTextFromPDF(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     // Configure PDF.js worker
                     if (typeof pdfjsLib !== 'undefined') {
@@ -376,9 +376,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                    
+
                     let fullText = '';
-                    
+
                     // Extract text from each page
                     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                         const page = await pdf.getPage(pageNum);
@@ -386,7 +386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const pageText = textContent.items.map(item => item.str).join(' ');
                         if (pageText.trim()) fullText += pageText.trim() + '\n\n';
                     }
-                    
+
                     const cleaned = fullText
                         .replace(/[\u2010-\u2014]/g, '-')
                         .replace(/\s+\n/g, '\n')
@@ -404,12 +404,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
 
                     resolve(cleaned);
-                    
+
                 } catch (error) {
                     reject(new Error('Failed to extract text from PDF: ' + error.message));
                 }
             };
-            
+
             reader.onerror = () => reject(new Error('Failed to read PDF file'));
             reader.readAsArrayBuffer(file);
         });
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Remove context file
-    window.removeContextFile = function() {
+    window.removeContextFile = function () {
         contextFileContent = null;
         contextFileUpload.value = '';
         const preview = document.getElementById('context-file-preview');
@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Read file content
                 const content = await readTextFile(file);
-                
+
                 // Add to reference documents (avoid duplicates)
                 const existingIndex = referenceDocuments.findIndex(doc => doc.name === file.name);
                 if (existingIndex >= 0) {
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Remove reference file
-    window.removeReferenceFile = function(index) {
+    window.removeReferenceFile = function (index) {
         referenceDocuments.splice(index, 1);
         if (referenceDocuments.length === 0) {
             const preview = document.getElementById('reference-files-preview');
@@ -558,23 +558,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Add reference documents as guidance
         if (referenceDocuments.length > 0) {
-            const referenceContent = referenceDocuments.map(doc => 
+            const referenceContent = referenceDocuments.map(doc =>
                 `--- Reference: ${doc.name} ---\n${doc.content}`
             ).join('\n\n');
-            
-            context = context ? 
+
+            context = context ?
                 `${context}\n\n=== REFERENCE MATERIALS ===\nPlease align your output with these curriculum standards and examples:\n\n${referenceContent}` :
                 `=== REFERENCE MATERIALS ===\nPlease align your output with these curriculum standards and examples:\n\n${referenceContent}`;
         }
-        
+
         try {
             showEnhancedLoading('Processing image... Generating accessibility descriptions');
             clearError();
-            
+
             console.log('🚀 Starting generation with endpoint:', API_CONFIG.endpoint);
             console.log('📷 Image data length:', currentImage ? currentImage.length : 0);
             console.log('📝 Context length:', context ? context.length : 0);
-            
+
             // Generate both alt text and long description
             const response = await fetch(`${API_CONFIG.endpoint}/generate-descriptions`, {
                 method: 'POST',
@@ -590,12 +590,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                let errorDetails = `HTTP error! status: ${response.status}`;
+                try {
+                    const errorData = await response.json();
+                    if (errorData.error) {
+                        errorDetails = errorData.error;
+                        if (errorData.details) errorDetails += ` (${errorData.details})`;
+                    }
+                } catch (e) {
+                    // Could not parse error JSON, fall back to status
+                }
+                throw new Error(errorDetails);
             }
 
             const result = await response.json();
             console.log('✅ Generation successful:', result);
-            
+
             showResults(result);
         } catch (error) {
             console.error('❌ Generation failed:', error);
@@ -754,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Global functions for button clicks
-    window.copyToClipboard = function(text) {
+    window.copyToClipboard = function (text) {
         navigator.clipboard.writeText(text).then(() => {
             // Show temporary success message
             const btn = event.target;
@@ -777,21 +787,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     };
 
-    window.generateAgain = function() {
+    window.generateAgain = function () {
         handleGenerate();
     };
 
-    window.downloadResults = function() {
+    window.downloadResults = function () {
         const results = document.querySelector('.results');
         if (!results) return;
 
         const sections = results.querySelectorAll('.result-section');
         const altText = sections[0]?.querySelector('.result-text')?.textContent || '';
-        
+
         let figureDescription = '';
         let longDescription = '';
         let transcribedText = '';
-        
+
         // Parse sections based on number present
         if (sections.length >= 2) {
             longDescription = sections[1]?.querySelector('.result-text')?.textContent || '';
@@ -855,7 +865,7 @@ ${transcribedText}
     };
 
     // Copy to clipboard functionality with success feedback
-    window.copyToClipboard = async function(text, type) {
+    window.copyToClipboard = async function (text, type) {
         try {
             await navigator.clipboard.writeText(text);
             showSuccessMessage(`${type} copied to clipboard! ✨`);
@@ -877,10 +887,10 @@ ${transcribedText}
         successDiv.className = 'success-toast';
         successDiv.textContent = message;
         document.body.appendChild(successDiv);
-        
+
         // Trigger animation
         setTimeout(() => successDiv.classList.add('show'), 10);
-        
+
         // Remove after 3 seconds
         setTimeout(() => {
             successDiv.classList.remove('show');
@@ -908,23 +918,23 @@ ${transcribedText}
 
     // Update loading messages for PDF processing
     const originalHandleContextFileUpload = handleContextFileUpload;
-    handleContextFileUpload = async function(event) {
+    handleContextFileUpload = async function (event) {
         const file = event.target.files[0];
         if (!file) return;
 
         if (file.name.toLowerCase().endsWith('.pdf')) {
             showEnhancedLoading('Processing PDF... Extracting text content');
         }
-        
+
         return originalHandleContextFileUpload.call(this, event);
     };
 
     // Dark mode toggle functionality
-    window.toggleDarkMode = function() {
+    window.toggleDarkMode = function () {
         document.body.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
         localStorage.setItem('darkMode', isDark);
-        
+
         const toggle = document.querySelector('.dark-mode-toggle');
         if (toggle) {
             toggle.textContent = isDark ? '☀️' : '🌙';
