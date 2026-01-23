@@ -1,282 +1,66 @@
 const { OpenAI } = require('openai');
 
 // Built-in reference materials for educational accessibility standards
-const EDUCATIONAL_STANDARDS = `EDUCATIONAL ACCESSIBILITY STANDARDS
+const EDUCATIONAL_STANDARDS = `EDUCATIONAL ACCESSIBILITY STANDARDS (WCAG 2.2 ALIGNED)
 
-This document provides standards for creating accessible image content that aligns with educational accessibility requirements.
+=== CORE RULES (NON-NEGOTIABLE) ===
 
-=== ALT TEXT STANDARDS ===
+1. ATTRIBUTES & LIMITS
+- Alt Text: STRICT limit of 120 characters. Count characters. If >120, rewrite concisely without losing meaning. 
+- Long Description: Required for complex images (charts, diagrams, detailed photos). No strict limit, but aim for clarity.
+- Transcription: LITERAL transcription of text (see below).
 
-Character Limit: 120 characters maximum
-- Count only visible characters (letters, numbers, punctuation, spaces)
-- Do not count quotation marks unless part of actual alt text
+2. VISUAL OBJECTIVITY (For Alt Text & Long Description)
+- Describe ONLY what is visible. No interpretation, no "intent", no "cause".
+- NO "image of", "picture of", "this shows", "this represents".
+- NO identification of people (use "person", "student"), species, or locations unless explicitly labeled.
+- State "Unconfirmed" for ambiguous features; do not guess.
+- AVOID process verbs (enters, moves, flows) unless labeled. Use spatial terms (placed, positioned, connected).
 
-Language Requirements:
-- Use active voice and present tense
-- Use "to" instead of hyphens in numeric ranges (e.g., "5 to 6" not "5-6")
-- NEVER use unit abbreviations - always spell out all units in full (e.g., "milligrams per liter" not "mg/L", "degrees Celsius" not "°C", "percent" not "%")
-- Use "frequency distribution" instead of "bar chart" or "histogram"
+3. SPATIAL & STRUCTURAL CLARITY
+- Use precise coordinates: "top left", "center", "background", "foreground".
+- Describe relationships: "connected to", "adjacent to", "encircled by".
+- For diagrams: Trace paths visually (e.g., "arrow points from A to B").
 
-Content Guidelines:
-- Describe only what is visually present
-- Include essential visual information for understanding
-- Avoid redundant phrases like "image of" or "picture showing"
-- Focus on educational content and key data points
+=== FIELD-SPECIFIC GUIDELINES ===
 
-=== FIGURE DESCRIPTION STANDARDS ===
+TYPE: PHOTOGRAPH
+- Focus on main subject, setting, and key actions/interactions.
+- Ignoring minor background clutter.
 
-Structure (Kroodsma Style):
-1. Begin with take-home message (main finding or insight)
-2. Follow with supporting details giving clear context
-3. Include variables, comparisons, patterns and their connections
-4. Make description stand-alone and fully communicative
+TYPE: CHART/GRAPH (STEM)
+- Alt Text: Chart type + X/Y axes titles + general trend (e.g., "Line graph of Velocity vs Time showing linear increase").
+- Long Description:
+  - Summary: Title/Purpose.
+  - Structure: Axes (Label, Units, Range).
+  - Data: Key data points, trends (peaks, troughs, intersections), or a structured summary of values.
+  - CONCLUSION NOT INTERPRETATION: State the visual trend ("positive slope"), not the scientific principle ("Newton's Law") unless labeled.
 
-Requirements:
-- Use full sentences, no fragments or bullet points
-- Keep language plain and accessible
-- Explain what relationships mean, don't just list what figure shows
-- Length: 1-3 sentences (typically up to 50 words, but may exceed for clarity)
-- Begin directly with the educational significance or main finding
-- Do NOT end with generic purpose sentences like "This figure allows you to evaluate..."
+TYPE: CHEMISTRY/DIAGRAMS
+- Do NOT name molecules/structures unless labels appear in image.
+- Describe geometry: "Six-membered ring", "double lines", "wedge bonds".
+- Symbols: "Arrow pointing right", "Delta symbol above arrow".
 
-Examples:
-- Good: "Arsenic's position in the periodic table reveals its chemical reactivity and similarity to nearby elements."
-- Poor: "Periodic table with arsenic highlighted."
+=== TEXT TRANSCRIPTION STANDARDS ===
+- Copy visible text EXACTLY (spelling, capitalization, punctuation).
+- Use quotation marks for labels: Label "Fig 1".
+- If text is claimed but not visible, state: "Text unreadable/not visible".
+- Do not expand abbreviations in the TRANSCRIPTION field.
 
-=== LONG DESCRIPTION STANDARDS ===
+=== UNIT & ABBREVIATION HANDLING (CRITICAL) ===
+- IN DESCRIPTIONS (Alt/Long/Figure): ALWAYS expand units.
+  - "mg/L" -> "milligrams per liter"
+  - "°C" -> "degrees Celsius"
+  - "5-10" -> "5 to 10" (No hyphens for ranges)
+- IN TRANSCRIPTION: Keep exact ("mg/L").
 
-Based on AccessiblePublishing.ca Guidelines for Extended Descriptions:
-
-Structure (General to Specific):
-- Always begin with: "This image is a [type] showing..."
-- Start with a brief overview/summary of the image (1-2 sentences)
-- Then provide more specific information and details
-- Work from general concept to specific elements
-- Allow reader to understand the initial concept first and foremost
-
-Organizational Techniques (choose what works best for the image):
-- Quadrants/thirds/halves: Describe parts by position (e.g., top left, bottom right, center)
-- Compass directions: Use N, NE, S, SW, etc. (especially for maps)
-- Clock positions: Divide by hours of clock face (for images with central focus)
-- Systematic progression: For diagrams, describe step-by-step or component-by-component
-- Tables/lists: For data-heavy images, organize information in structured format
-
-Content Requirements:
-- Include title and purpose of the image for context
-- Focus on educational significance and learning objectives
-- Describe elements important to understanding the purpose and meaning
-- Reader should understand after reading once - be clear and precise
-- Can be multiple paragraphs and include lists or tables as needed
-- Use "to" for numeric ranges instead of hyphens
-- NEVER use unit abbreviations - always spell out all units in full (e.g., "milligrams per liter" not "mg/L", "degrees Celsius" not "°C", "percent" not "%")
-- Use "frequency distribution" not "bar chart" or "histogram"
-- Never restate paragraph text or captions
-
-Type-Specific Guidelines:
-- Maps: Include name/title and legend description; focus on clarity over detail; ask "What is this map telling the reader?"
-- Graphs/Charts: Provide title and purpose, describe layout (type, axes); ask "What is this graph telling the reader?"
-- Diagrams/Flowcharts: Write systematically, step-by-step; describe all components that contribute to understanding
-- Formulas/Equations: Use MathML when possible, or provide text version in alt-text (rarely need long description)
-
-=== TRANSCRIBED TEXT STANDARDS ===
-
-CRITICAL RULE: LITERAL TRANSCRIPTION ONLY
-- Transcribe text EXACTLY as it appears - no interpretation
-- If axis shows "0, 5, 10, 15, 20" write exactly that, not "0 to 20"
-- If labels show "10, 11, 12, 13, 14" write each number individually
-- Preserve spelling, capitalization, punctuation, and unit abbreviations exactly as shown
-- Include every visible axis label, tick mark, legend entry, title, and data value
-
-Format Guidelines:
-- Use line breaks to separate different text elements
-- Group related text logically (titles, then axis labels, then data values)
-- For charts: List each visible axis tick mark individually
-- For data labels: Include every visible number/label separately
-- If no text visible, write "No text visible in image"
-
-REMEMBER: You are a transcription service - copy exactly what you see!
-
-=== FIGURE LEGENDS BEST PRACTICES ===
-
-Primary Purpose:
-- Make figures accessible to all students including those with visual impairments
-- Provide context that helps students interpret data and understand concepts
-- Support learning objectives through clear, structured descriptions
-
-Structure:
-1. Start directly with the scientific content and main finding (NEVER with "Figure")
-2. Describe key data patterns and relationships
-3. Explain educational significance or scientific meaning
-4. Include specific data points when relevant for learning
-
-Language Guidelines:
-- Use descriptive, specific language
-- Avoid vague terms like "shows" or "depicts" without detail
-- Include quantitative information when educationally relevant
-- Connect visual elements to course concepts
-
-=== KROODSMA'S FIGURE LEGEND PRINCIPLES ===
-
-Based on "A Quick Fix for Figure Legends and Table Headings" by Donald Kroodsma:
-
-Key Philosophy:
-- Figure legends should tell the complete story of what the figure shows
-- Readers should understand the main finding without reading the full text
-- Lead with the take-home message, then provide supporting details
-
-Effective Figure Legend Structure:
-1. Start with the main finding or interpretation (the "so what?")
-2. Provide context and methodology only as needed for understanding
-3. Include specific details that support the main message
-4. Make the legend self-contained and meaningful
-
-Examples of Effective Approach:
-- Instead of: "Graph showing enzyme activity at different temperatures"
-- Write: "Enzyme activity peaks at body temperature (37°C), declining rapidly above 40°C"
-- Instead of: "Bar chart of student test scores by study method"
-- Write: "Students using active recall scored 23% higher than those using passive review"
-- Instead of: "Ion peaks at 1.2, 1.5, and 3.8 milliseconds with tallest at 1.5 milliseconds"
-- Write: "Ion mobility spectrum showing multiple compounds. By comparing drift times to reference values, the 1.2 ms peak corresponds to methanol, 1.5 ms to ethanol, and 3.8 ms to n-heptane. The tallest peak at 1.5 ms indicates ethanol is the most abundant compound in the sample."
-
-FIGURE DESCRIPTION WRITING INSTRUCTIONS:
-
-Purpose: Write clear, self-contained figure descriptions that explain what the figure means, how the data show it, and why it matters. Each description must let the reader understand the figure without referring to the main text.
-
-Structure (typically three concise sentences):
-1. Main message – State the key finding or overall trend the figure demonstrates. Lead with the main point rather than listing what appears in the image.
-2. Supporting evidence – Describe the pattern, relationship, or comparison that supports the main message. Mention key variables or representative values. Avoid referring to colors, shapes, or positions.
-3. Significance or interpretation – Explain the meaning or implication of the pattern. Connect it to the concept, process, or argument.
-
-Style Guidelines:
-- Use complete sentences in present tense
-- Maintain neutral, factual, professional tone
-- Avoid contractions and em dashes
-- Do NOT begin with "Figure," "Fig.," or a number
-- Focus on interpretation, not on how the figure looks
-- Ensure description is stand-alone and logically ordered
-- Keep concise and accessible for all readers
-
-Quality Requirements:
-✅ Includes main finding, supporting evidence, and significance
-✅ Describes relationships or trends, not visual features
-✅ Written in clear, neutral, present-tense language
-✅ Does NOT begin with "Figure" or a number
-✅ Can be understood without referring to main text
-
-Guiding Principles:
-• Lead with meaning - Begin with the main idea or finding
-• Support with data - Summarize the relevant pattern or relationship
-• End with context - Explain why the result matters
-• Be self-contained - Make sense on its own
-• Interpret, don't narrate - Describe what data mean, not shapes/colors
-
-=== EDUCATIONAL WRITING AND COPYEDIT GUIDELINES ===
-
-Based on established educational writing and copyedit standards:
-
-Language Standards:
-- Use clear, concise, and accessible language appropriate for educational content
-- Maintain consistency in terminology and style across all accessibility descriptions
-- Follow active voice when possible for clarity and engagement
-- Use present tense for describing visual elements and data
-
-Technical Writing Requirements:
-- Spell out units on first use, then use standard abbreviations consistently
-- Use "to" instead of hyphens for ranges (e.g., "5 to 10" not "5-10")
-- Maintain parallel structure in lists and descriptions
-- Use specific, quantitative language when describing data
-
-Educational Content Standards:
-- Prioritize learning objectives in all descriptions
-- Connect visual information to broader course concepts
-- Use discipline-appropriate terminology accurately
-- Ensure descriptions support pedagogical goals
-
-Formatting and Style:
-- Use sentence case for headings and labels
-- Maintain consistent punctuation and capitalization
-- Follow standard educational spelling and usage conventions
-- Ensure all text meets accessibility readability standards
-
-Quality Assurance:
-- Review all content for accuracy and clarity
-- Maintain consistency with educational content standards
-- Check that descriptions serve educational purposes effectively
-- Ensure compliance with institutional accessibility standards
-
-=== EDUCATIONAL STYLE GUIDE STANDARDS ===
-
-Based on educational accessibility style guide requirements:
-
-Voice and Tone:
-- Maintain professional yet approachable tone in all descriptions
-- Use authoritative but accessible language appropriate for educational content
-- Ensure consistency with established educational accessibility standards
-- Balance technical accuracy with readability for diverse learner audiences
-
-Terminology and Usage:
-- Follow standard terminology for scientific and educational concepts
-- Use consistent capitalization for proper nouns and technical terms
-- Apply established style preferences for common educational phrases
-- Maintain uniformity in how measurements, data, and statistics are presented
-
-Content Structure and Organization:
-- Follow clear hierarchical information presentation standards
-- Use consistent formatting for similar types of content across descriptions
-- Apply proven approaches to introducing and explaining complex concepts
-- Ensure logical flow that supports effective pedagogical methodology
-
-Accessibility Philosophy:
-- Align all content with inclusive educational principles
-- Use language that reflects commitment to accessible learning
-- Maintain consistency with clear scientific communication standards
-- Ensure descriptions support diverse curriculum objectives
-
-Visual Content Guidelines:
-- Follow established standards for describing charts, graphs, and data visualizations
-- Use proven approaches for explaining visual relationships
-- Apply consistent methodology for describing scientific illustrations
-- Maintain clear standards for technical diagram explanations
-
-Accessibility Integration:
-- Ensure all descriptions meet DSL's accessibility compliance requirements
-- Follow DSL's specific guidelines for inclusive content creation
-- Apply DSL's standards for multi-modal learning support
-- Maintain consistency with DSL's universal design principles
-
-=== DSL SUMMARY OF STYLE - QUICK REFERENCE ===
-
-Essential style points for immediate reference when generating accessibility content:
-
-Key Writing Principles:
-- Use clear, direct language that supports learning objectives
-- Maintain active voice and present tense when describing visual elements
-- Prioritize educational value in every description
-- Ensure consistency across all content types
-
-Critical Style Rules:
-- Spell out units in full on first use (e.g., "milligrams per liter" not "mg/L")
-- Use "to" for ranges instead of hyphens (e.g., "5 to 10" not "5-10")
-- Apply sentence case for headings and labels consistently
-- Use specific, quantitative language when describing data
-
-Essential Format Requirements:
-- Begin figure descriptions with main educational message
-- Start long descriptions with "This image is a [type] showing..."
-- Keep alt text under 120 characters while maintaining meaning
-- Transcribe all visible text exactly as shown in logical reading order
-
-Priority Guidelines:
-- Educational significance takes precedence over visual description
-- Support DSL's pedagogical approach in all content
-- Maintain professional yet accessible tone throughout
-- Ensure descriptions can stand alone as meaningful content
-
-Quality Checkpoints:
-- Does the description serve the learning objective?
-- Is the language clear and accessible to the target audience?
-- Does the content align with DSL's brand voice and standards?
-- Are all technical requirements (character limits, format) met?`;
+=== FIGURE DESCRIPTION (EDUCATIONAL CONTEXT) ===
+- Purpose: Pedagogical interpretation (Kroodsma Style).
+- Structure: 
+  1. Main Finding/Take-home message.
+  2. Supporting detail from image.
+  3. Significance.
+- This is the ONLY place for interpretation/teaching.`;
 
 let openai;
 function getClient() {
@@ -524,8 +308,8 @@ Your task is to analyze an image and generate comprehensive accessibility conten
 
 === PROCESS ===
 1. Analyze the image to determine its type (CHART_GRAPH, SCIENTIFIC_FIGURE, PHOTOGRAPH, or MIXED).
-2. Generate content specifically tailored to that type.
-3. ADHERE STRICTLY to the following schemas and constraints.
+2. Generate content specifically tailored to that type, applying the FIELD-SPECIFIC GUIDELINES.
+3. ADHERE STRICTLY to the CORE RULES, especially the 120-character limit for Alt Text and visual objectivity.
 
 === EDUCATIONAL STANDARDS ===
 ${combinedReferences}
