@@ -285,8 +285,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             // Validate file size (5MB limit)
-            if (file.size > 5 * 1024 * 1024) {
-                throw new Error('File size too large. Maximum 5MB allowed.');
+            if (file.size > 50 * 1024 * 1024) {
+                throw new Error('File size too large. Maximum 50MB allowed.');
             }
 
             // Validate file type
