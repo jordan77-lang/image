@@ -106,6 +106,7 @@ const validateObjectives = (objectives) => {
 };
 
 // Strict JSON schema for structured outputs
+// Note: strict mode requires anyOf for nullable fields — type arrays are not supported
 const LO_JSON_SCHEMA = {
   type: 'json_schema',
   json_schema: {
@@ -122,8 +123,8 @@ const LO_JSON_SCHEMA = {
               id: { type: 'string' },
               objective_text: { type: 'string' },
               bloom_level: { type: 'string' },
-              phase: { type: ['string', 'null'] },
-              alignment: { type: ['string', 'null'] }
+              phase: { anyOf: [{ type: 'string' }, { type: 'null' }] },
+              alignment: { anyOf: [{ type: 'string' }, { type: 'null' }] }
             },
             required: ['id', 'objective_text', 'bloom_level', 'phase', 'alignment'],
             additionalProperties: false
@@ -133,7 +134,7 @@ const LO_JSON_SCHEMA = {
           type: 'object',
           properties: {
             audience_level: { type: 'string' },
-            subject_area: { type: ['string', 'null'] },
+            subject_area: { anyOf: [{ type: 'string' }, { type: 'null' }] },
             framework: { type: 'string' },
             objective_scope: { type: 'string' },
             source_file_ids: { type: 'array', items: { type: 'string' } },
