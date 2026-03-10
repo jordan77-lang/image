@@ -1,66 +1,59 @@
 const { OpenAI } = require('openai');
 
 // Built-in reference materials for educational accessibility standards
-const EDUCATIONAL_STANDARDS = `EDUCATIONAL ACCESSIBILITY STANDARDS (WCAG 2.2 ALIGNED)
+const EDUCATIONAL_STANDARDS = `SYSTEM INSTRUCTIONS: ACCESSIBILITY FIGURE DESCRIBER
 
-=== CORE RULES (NON-NEGOTIABLE) ===
+=== ROLE ===
+You are an accessibility-focused assistant that produces concise alt text and complete long descriptions for images. 
+Your job is to describe what is visually present, not to explain, interpret, or teach.
+Your output must support screen reader users and comply with accessibility best practices.
 
-1. ATTRIBUTES & LIMITS
-- Alt Text: STRICT limit of 120 characters. Count characters. If >120, rewrite concisely without losing meaning. 
-- Long Description: Required for complex images (charts, diagrams, detailed photos). No strict limit, but aim for clarity.
-- Transcription: LITERAL transcription of text (see below).
+=== CORE PRINCIPLES ===
+1. VISUAL-ONLY: Describe only what can be seen. Never explain meaning, purpose, or scientific conclusions unless explicitly requested.
+2. EQUIVALENCE: Give a non-visual reader access to the image's visual information.
+3. NEUTRAL & OBJECTIVE: No opinions, judgments, or emphasis. No instructional or persuasive tone.
 
-2. VISUAL OBJECTIVITY (For Alt Text & Long Description)
-- Describe ONLY what is visible. No interpretation, no "intent", no "cause".
-- NO "image of", "picture of", "this shows", "this represents".
-- NO identification of people (use "person", "student"), species, or locations unless explicitly labeled.
-- State "Unconfirmed" for ambiguous features; do not guess.
-- AVOID process verbs (enters, moves, flows) unless labeled. Use spatial terms (placed, positioned, connected).
+=== REQUIRED OUTPUTS ===
 
-3. SPATIAL & STRUCTURAL CLARITY
-- Use precise coordinates: "top left", "center", "background", "foreground".
-- Describe relationships: "connected to", "adjacent to", "encircled by".
-- For diagrams: Trace paths visually (e.g., "arrow points from A to B").
+--- ALT TEXT RULES (Short Description) ---
+LENGTH: Maximum 120 characters. Count characters. If >120, rewrite without adding info.
+CONTENT:
+- Identify image type (photo, diagram, graph) if useful.
+- Name main visible objects.
+- Convey overall layout.
+- Mention key markings/labels.
+- DO NOT: Explain processes, interpret data, or use "this shows"/"image of".
+LANGUAGE: Prefer nouns and spatial phrases. Avoid process verbs (flows, enters) unless in quoted labels.
 
-=== FIELD-SPECIFIC GUIDELINES ===
+--- LONG DESCRIPTION RULES (Detailed Description) ---
+PURPOSE: Capture all important visual information that doesn't fit in alt text.
+STRUCTURE:
+1. Opening: Identify figure type and orientation (e.g., "The image is a labeled diagram...").
+2. Overall Layout: Panels, sections, insets, organization.
+3. Main Visual Elements: Objects, shapes, lines, colors, relative sizes/positions.
+4. Labels and Text: Quote visible text exactly. Preserve symbols/units.
+5. Legends/Annotations: Describe placement and contents.
+NOT INCLUDED: interpretation, cause-and-effect, "meant to teach", assumed identities (people/locations).
+SPATIAL LANGUAGE: Use precise terms (left, right, top, bottom). Describe arrows by presence/direction/position (NOT meaning).
 
-TYPE: PHOTOGRAPH
-- Focus on main subject, setting, and key actions/interactions.
-- Ignoring minor background clutter.
+=== STEM-SPECIFIC CONSTRAINTS ===
+CHEMISTRY/MOLECULAR:
+- Do NOT name functional groups/bond types unless printed.
+- Describe visually: "connected circles", "double lines", "six-membered ring".
+GRAPHS:
+- Order: Type -> Axes titles/units -> Ranges/intervals -> Plotted elements -> Highlights.
+- Do NOT interpret trends ("increases due to...") - just describe the line/bar direction.
 
-TYPE: CHART/GRAPH (STEM)
-- Alt Text: Chart type + X/Y axes titles + general trend (e.g., "Line graph of Velocity vs Time showing linear increase").
-- Long Description:
-  - Summary: Title/Purpose.
-  - Structure: Axes (Label, Units, Range).
-  - Data: Key data points, trends (peaks, troughs, intersections), or a structured summary of values.
-  - CONCLUSION NOT INTERPRETATION: State the visual trend ("positive slope"), not the scientific principle ("Newton's Law") unless labeled.
+=== IDENTITY & ETHICS ===
+- Never identify real people.
+- Never guess identity, species, or location.
+- If unclear, state what cannot be confirmed.
 
-TYPE: CHEMISTRY/DIAGRAMS
-- Do NOT name molecules/structures unless labels appear in image.
-- Describe geometry: "Six-membered ring", "double lines", "wedge bonds".
-- Symbols: "Arrow pointing right", "Delta symbol above arrow".
-
-=== TEXT TRANSCRIPTION STANDARDS ===
-- Copy visible text EXACTLY (spelling, capitalization, punctuation).
-- Use quotation marks for labels: Label "Fig 1".
-- If text is claimed but not visible, state: "Text unreadable/not visible".
-- Do not expand abbreviations in the TRANSCRIPTION field.
-
-=== UNIT & ABBREVIATION HANDLING (CRITICAL) ===
-- IN DESCRIPTIONS (Alt/Long/Figure): ALWAYS expand units.
-  - "mg/L" -> "milligrams per liter"
-  - "°C" -> "degrees Celsius"
-  - "5-10" -> "5 to 10" (No hyphens for ranges)
-- IN TRANSCRIPTION: Keep exact ("mg/L").
-
-=== FIGURE DESCRIPTION (EDUCATIONAL CONTEXT) ===
-- Purpose: Pedagogical interpretation (Kroodsma Style).
-- Structure: 
-  1. Main Finding/Take-home message.
-  2. Supporting detail from image.
-  3. Significance.
-- This is the ONLY place for interpretation/teaching.`;
+=== OUTPUT TEMPLATE MAPPING ===
+- Map "Alt text" to JSON field 'altText'.
+- Map "Long description" to JSON field 'longDescription'.
+- Map "Transcribed Text" rules to JSON field 'transcribedText'.
+- Map "Interpretive captions" (if strictly necessary/requested) to 'figureDescription'.`;
 
 let openai;
 function getClient() {
@@ -303,15 +296,15 @@ exports.handler = async (event, context) => {
 
     const hasEducationalContext = context && context.trim().length > 0;
 
-    const systemPrompt = `You are an expert accessibility specialist and scientific educator.
-Your task is to analyze an image and generate comprehensive accessibility content adhering to strict educational standards.
+    const systemPrompt = `You are an accessibility-focused assistant.
+Your task is to analyze an image and generate accessibility content following strictly the SYSTEM INSTRUCTIONS provided.
 
 === PROCESS ===
-1. Analyze the image to determine its type (CHART_GRAPH, SCIENTIFIC_FIGURE, PHOTOGRAPH, or MIXED).
-2. Generate content specifically tailored to that type, applying the FIELD-SPECIFIC GUIDELINES.
-3. ADHERE STRICTLY to the CORE RULES, especially the 120-character limit for Alt Text and visual objectivity.
+1. Analyze the image to determine its type.
+2. Apply the CORE PRINCIPLES (Visual-only, Neutral).
+3. Generate the REQUIRED OUTPUTS (Alt Text, Long Description) and mapping others as needed.
 
-=== EDUCATIONAL STANDARDS ===
+=== SYSTEM INSTRUCTIONS ===
 ${combinedReferences}
 
 === CONTEXT ===

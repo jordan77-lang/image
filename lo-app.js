@@ -5,7 +5,7 @@ let currentResults = null;
 function toggleAdvanced() {
     const options = document.getElementById('advancedOptions');
     const arrow = document.getElementById('advancedArrow');
-    
+
     if (options.classList.contains('open')) {
         options.classList.remove('open');
         arrow.textContent = '▼';
@@ -20,7 +20,30 @@ function clearForm() {
     document.getElementById('loForm').reset();
     document.getElementById('outputSection').classList.add('hidden');
     document.getElementById('errorMessage').classList.add('hidden');
+    document.getElementById('contentLengthWarning').style.display = 'none';
+    document.getElementById('contentCharCount').textContent = '';
 }
+
+// Scope hint switcher
+document.getElementById('objectiveScope').addEventListener('change', function () {
+    document.getElementById('scopeHint_course').style.display = this.value === 'course_level' ? '' : 'none';
+    document.getElementById('scopeHint_task').style.display  = this.value === 'task_specific'  ? '' : 'none';
+    document.getElementById('scopeHint_dsl').style.display   = this.value === 'dsl_lab'         ? '' : 'none';
+});
+
+// Content length counter and warning
+document.getElementById('contentText').addEventListener('input', function () {
+    const len = this.value.length;
+    const limit = 8000;
+    const countEl = document.getElementById('contentCharCount');
+    const warnEl  = document.getElementById('contentLengthWarning');
+    if (len > 0) {
+        countEl.textContent = `${len.toLocaleString()} characters`;
+    } else {
+        countEl.textContent = '';
+    }
+    warnEl.style.display = len > limit ? 'block' : 'none';
+});
 
 // Handle file upload with PDF-aware extraction
 document.getElementById('contentFile').addEventListener('change', async (e) => {
@@ -244,62 +267,122 @@ document.getElementById('loForm').addEventListener('submit', async (e) => {
     }
 });
 
+// Bloom's level → CSS class number
+function bloomClass(level) {
+    if (!level) return 'bloom-1';
+    const m = level.match(/Level\s*(\d)/i);
+    return m ? `bloom-${m[1]}` : 'bloom-1';
+}
+
+// Phase → CSS class
+function phaseClass(phase) {
+    if (!phase) return '';
+    const p = phase.toLowerCase();
+    if (p === 'prelab') return 'phase-prelab';
+    if (p === 'lab')    return 'phase-lab';
+    if (p === 'postlab') return 'phase-postlab';
+    return '';
+}
+
 // Display results in table
 function displayResults(data) {
     const tableBody = document.getElementById('resultsTableBody');
     tableBody.innerHTML = '';
-    
+
     if (!data.learning_objectives || data.learning_objectives.length === 0) {
         showError('No learning objectives were generated. Please try with different content.');
         return;
     }
-    
+
+    // Show/hide truncation warning
+    const truncWarn = document.getElementById('truncationWarning');
+    if (truncWarn) truncWarn.style.display = (data.metadata && data.metadata.content_truncated) ? 'block' : 'none';
+
+    // Show/hide validation warnings
+    const valWarn = document.getElementById('validationWarnings');
+    if (valWarn) {
+        if (data._validation_warnings && data._validation_warnings.length > 0) {
+            valWarn.style.display = 'block';
+            valWarn.innerHTML = '<strong>Quality warnings:</strong><ul style="margin:4px 0 0 16px;">' +
+                data._validation_warnings.map(w => `<li>${w}</li>`).join('') + '</ul>';
+        } else {
+            valWarn.style.display = 'none';
+        }
+    }
+
+    // Determine if any objective has a phase — show/hide phase column
+    const hasPhases = data.learning_objectives.some(lo => lo.phase);
+    const phaseColHeader = document.getElementById('phaseCol');
+    if (phaseColHeader) phaseColHeader.style.display = hasPhases ? '' : 'none';
+
     data.learning_objectives.forEach((lo) => {
         const row = document.createElement('tr');
         row.id = lo.id;
-        
+
         // ID column
         const idCell = document.createElement('td');
         idCell.className = 'lo-id';
         idCell.textContent = lo.id;
         row.appendChild(idCell);
-        
+
+        // Phase column (only shown in DSL Lab mode)
+        if (hasPhases) {
+            const phaseCell = document.createElement('td');
+            if (lo.phase) {
+                const badge = document.createElement('span');
+                badge.className = `phase-badge ${phaseClass(lo.phase)}`;
+                badge.textContent = lo.phase;
+                phaseCell.appendChild(badge);
+            }
+            row.appendChild(phaseCell);
+        }
+
         // Objective text column
         const textCell = document.createElement('td');
         textCell.className = 'lo-text';
         textCell.textContent = lo.objective_text;
         row.appendChild(textCell);
-        
+
+        // Bloom's level column
+        const bloomCell = document.createElement('td');
+        if (lo.bloom_level) {
+            const badge = document.createElement('span');
+            badge.className = `bloom-badge ${bloomClass(lo.bloom_level)}`;
+            badge.textContent = lo.bloom_level;
+            bloomCell.appendChild(badge);
+        }
+        row.appendChild(bloomCell);
+
         // Alignment column
         const alignmentCell = document.createElement('td');
         alignmentCell.className = 'lo-alignment';
-        alignmentCell.textContent = lo.alignment || 'No specific standard alignment';
+        alignmentCell.textContent = lo.alignment || '—';
         row.appendChild(alignmentCell);
-        
+
         // Actions column
         const actionsCell = document.createElement('td');
         actionsCell.className = 'action-buttons';
-        
+
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn-icon';
         copyBtn.textContent = 'Copy';
         copyBtn.onclick = () => copyObjective(lo);
         actionsCell.appendChild(copyBtn);
-        
+
         const copyAlignBtn = document.createElement('button');
         copyAlignBtn.className = 'btn-icon';
         copyAlignBtn.textContent = 'Copy Align';
         copyAlignBtn.onclick = () => copyAlignment(lo);
         actionsCell.appendChild(copyAlignBtn);
-        
+
         row.appendChild(actionsCell);
         tableBody.appendChild(row);
     });
-    
+
     // Show output section
     document.getElementById('outputSection').classList.remove('hidden');
     document.getElementById('errorMessage').classList.add('hidden');
-    
+
     // Scroll to results
     document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth' });
 }
@@ -332,16 +415,16 @@ function copyAllObjectives() {
         showError('No objectives to copy');
         return;
     }
-    
+
     let text = 'LEARNING OBJECTIVES\n\n';
     currentResults.learning_objectives.forEach((lo) => {
-        text += `${lo.id}. ${lo.objective_text}\n`;
-        if (lo.alignment) {
-            text += `   Standards: ${lo.alignment}\n`;
-        }
+        const phaseLabel = lo.phase ? ` (${lo.phase})` : '';
+        text += `${lo.id}${phaseLabel}. ${lo.objective_text}\n`;
+        if (lo.bloom_level) text += `   Bloom's: ${lo.bloom_level}\n`;
+        if (lo.alignment)   text += `   Standards: ${lo.alignment}\n`;
         text += '\n';
     });
-    
+
     navigator.clipboard.writeText(text).then(() => {
         showToast('All objectives copied to clipboard!');
     }).catch(err => {
@@ -380,15 +463,16 @@ function downloadCSV() {
     }
     
     // Create CSV content with headers
-    let csv = '#,Learning Objective,Alignment\n';
-    
+    let csv = '#,Phase,Learning Objective,Bloom\'s Level,Alignment\n';
+
     currentResults.learning_objectives.forEach((lo) => {
-        // Escape quotes and wrap fields with commas/quotes in double quotes
-        const id = lo.id || '';
+        const id        = lo.id || '';
+        const phase     = (lo.phase || '').replace(/"/g, '""');
         const objective = (lo.objective_text || '').replace(/"/g, '""');
+        const bloom     = (lo.bloom_level || '').replace(/"/g, '""');
         const alignment = (lo.alignment || '').replace(/"/g, '""');
-        
-        csv += `"${id}","${objective}","${alignment}"\n`;
+
+        csv += `"${id}","${phase}","${objective}","${bloom}","${alignment}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

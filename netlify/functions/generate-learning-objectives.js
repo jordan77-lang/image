@@ -30,6 +30,18 @@ try {
   NGSS_PE = [];
 }
 
+// Science subject keywords — NGSS alignment only applies to these
+const SCIENCE_KEYWORDS = [
+  'biology', 'chemistry', 'physics', 'science', 'ecology', 'genetics', 'anatomy',
+  'physiology', 'earth science', 'environmental', 'forensic', 'biochemistry',
+  'microbiology', 'geology', 'astronomy', 'neuroscience', 'lab', 'laboratory'
+];
+
+const isScience = (subject_area, content_text) => {
+  const haystack = ((subject_area || '') + ' ' + (content_text || '').substring(0, 500)).toLowerCase();
+  return SCIENCE_KEYWORDS.some(kw => haystack.includes(kw));
+};
+
 // Simple tokenization and cosine similarity for NGSS matching
 const tokenize = (text) => (text || '')
   .toLowerCase()
@@ -60,7 +72,8 @@ const cosine = (a, b) => {
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
-const getTopNgssMatches = (text, topN = 3, minScore = 0.08) => {
+// Raised threshold from 0.08 → 0.15 to reduce spurious matches
+const getTopNgssMatches = (text, topN = 2, minScore = 0.15) => {
   if (!NGSS_PE.length || !text) return [];
   const vec = toVector(tokenize(text));
   const scored = NGSS_PE.map(pe => {
@@ -72,6 +85,68 @@ const getTopNgssMatches = (text, topN = 3, minScore = 0.08) => {
     .sort((a, b) => b.score - a.score)
     .slice(0, topN)
     .map(({ code, summary, score }) => ({ code, summary, score }));
+};
+
+// Vague verb check — reject objectives containing these
+const VAGUE_VERBS = /\b(understand|know|learn|appreciate|be familiar with|be aware of|grasp|comprehend)\b/i;
+const WRONG_PREFIX = /^(students will( be able to)?|learners will( be able to)?|you will be able to)/i;
+
+const validateObjectives = (objectives) => {
+  const issues = [];
+  objectives.forEach((lo, i) => {
+    const text = lo.objective_text || '';
+    if (WRONG_PREFIX.test(text.trim())) {
+      issues.push(`LO${i + 1} starts with forbidden prefix: "${text.substring(0, 40)}"`);
+    }
+    if (VAGUE_VERBS.test(text)) {
+      issues.push(`LO${i + 1} contains vague verb: "${text.substring(0, 60)}"`);
+    }
+  });
+  return issues;
+};
+
+// Strict JSON schema for structured outputs
+const LO_JSON_SCHEMA = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'learning_objectives_response',
+    strict: true,
+    schema: {
+      type: 'object',
+      properties: {
+        learning_objectives: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              objective_text: { type: 'string' },
+              bloom_level: { type: 'string' },
+              phase: { type: ['string', 'null'] },
+              alignment: { type: ['string', 'null'] }
+            },
+            required: ['id', 'objective_text', 'bloom_level', 'phase', 'alignment'],
+            additionalProperties: false
+          }
+        },
+        metadata: {
+          type: 'object',
+          properties: {
+            audience_level: { type: 'string' },
+            subject_area: { type: ['string', 'null'] },
+            framework: { type: 'string' },
+            objective_scope: { type: 'string' },
+            source_file_ids: { type: 'array', items: { type: 'string' } },
+            generated_at: { type: 'string' }
+          },
+          required: ['audience_level', 'subject_area', 'framework', 'objective_scope', 'source_file_ids', 'generated_at'],
+          additionalProperties: false
+        }
+      },
+      required: ['learning_objectives', 'metadata'],
+      additionalProperties: false
+    }
+  }
 };
 
 exports.handler = async (event, context) => {
@@ -97,35 +172,44 @@ exports.handler = async (event, context) => {
     };
   }
 
-    try {
-        // Parse request body
-        const {
-            content_text,
-            audience_level = 'college_intro',
-            subject_area = null,
-            objective_scope = 'course_level',
-            framework = 'all',
-            num_objectives = 'auto'
-        } = JSON.parse(event.body);
+  try {
+    // Parse request body
+    const {
+      content_text,
+      audience_level = 'college_intro',
+      subject_area = null,
+      objective_scope = 'course_level',
+      framework = 'all',
+      num_objectives = 'auto'
+    } = JSON.parse(event.body);
 
-        // Validate required fields
-        if (!content_text || content_text.trim().length === 0) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'content_text is required' })
-            };
-        }
-        
-    // Auto-detect number of objectives and ENFORCE >= number of assessed items
+    // Validate required fields
+    if (!content_text || content_text.trim().length === 0) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'content_text is required' })
+      };
+    }
+
+    // Warn if content was truncated on client — flag in response
+    const CONTENT_LIMIT = 8000;
+    const contentTruncated = content_text.length > CONTENT_LIMIT;
+    const contentForPrompt = content_text.substring(0, CONTENT_LIMIT);
+
+    // Determine if this is a DSL lab mode request
+    const isDSLLab = objective_scope === 'dsl_lab';
+
+    // Auto-detect number of objectives
     const contentLower = content_text.toLowerCase();
     const countAssessedItems = () => {
       let counts = [];
-      // 1) Question marks (rough proxy for discrete questions)
+
+      // Question marks (rough proxy for discrete questions)
       const qm = (content_text.match(/\?/g) || []).length;
       if (qm) counts.push(qm);
 
-      // 2) Common question stems
+      // Common question stems
       const questionStems = [
         /\bwhich of the following\b/gi,
         /\bselect (the|all) (best|correct)\b/gi,
@@ -142,15 +226,15 @@ exports.handler = async (event, context) => {
         if (m) counts.push(m.length);
       });
 
-      // 3) Enumerated steps that likely indicate assessed tasks
+      // Enumerated steps
       const stepMatches = content_text.match(/^\s*\d+[\.\)]\s+/gim);
       if (stepMatches) counts.push(stepMatches.length);
 
-      // 4) Imperative task verbs at line starts (Calculate, Determine, Identify, Explain, Compare, Predict, Analyze, Evaluate, Justify, Classify)
+      // Imperative task verbs at line starts
       const imperative = content_text.match(/^(\s*(calculate|determine|identify|explain|compare|predict|analyze|evaluate|justify|classify|design|derive|prove|show|compute|solve)\b)/gim);
       if (imperative) counts.push(imperative.length);
 
-      // 5) Existing activity/objective indicators
+      // Activity/objective indicators
       const activityIndicators = [
         /objective \d+[:\.]/gi,
         /step \d+[:\.]/gi,
@@ -166,16 +250,18 @@ exports.handler = async (event, context) => {
         if (matches) counts.push(matches.length);
       });
 
-      // Use the maximum heuristic count as a conservative lower bound of assessed items
       const detected = counts.length ? Math.max(...counts) : 0;
       return detected;
     };
 
     const assessedItemCount = countAssessedItems();
-    const MAX_OBJECTIVES = 12; // keep responses under Netlify timeout
+    const MAX_OBJECTIVES = 12;
     let targetNumObjectives;
     if (num_objectives === 'auto') {
-      if (assessedItemCount > 0) {
+      if (isDSLLab) {
+        // DSL lab mode: detect prelab/lab/postlab phases (1 objective each by default)
+        targetNumObjectives = Math.min(Math.max(assessedItemCount, 3), MAX_OBJECTIVES);
+      } else if (assessedItemCount > 0) {
         targetNumObjectives = Math.min(Math.max(assessedItemCount, 4), MAX_OBJECTIVES);
       } else {
         targetNumObjectives = 5;
@@ -184,313 +270,201 @@ exports.handler = async (event, context) => {
       const requested = parseInt(num_objectives) || 5;
       targetNumObjectives = Math.min(Math.max(requested, 1), MAX_OBJECTIVES);
     }
-    console.log(`Detected ~${assessedItemCount} assessed items; generating ${targetNumObjectives} objectives (capped at ${MAX_OBJECTIVES})`);
+    console.log(`Detected ~${assessedItemCount} assessed items; generating ${targetNumObjectives} objectives (scope: ${objective_scope})`);
 
-    // Build system prompt with DSL standards
-  const systemPrompt = `You are an expert curriculum-authoring assistant specializing in learning objectives design.
+    // Determine if NGSS alignment is relevant for this content
+    const scienceContent = isScience(subject_area, content_text);
+    const useNGSS = scienceContent && (framework === 'all' || framework === 'ngss');
+
+    // ─── SYSTEM PROMPT ────────────────────────────────────────────────────────
+    const systemPrompt = `You are an expert curriculum-authoring assistant specializing in learning objectives design for Dreamscape Learn (DSL), an immersive educational platform used at universities and K-12 institutions.
 
 KEY PRINCIPLES:
-- Write DIRECT, CONCISE objectives without "Students will" or "Learners will" phrasing
+- Write DIRECT, CONCISE objectives without "Students will" or "Learners will" phrasing — NEVER use these prefixes
 - Start with a strong action verb or "Given X, [action verb]..." format
-- Use precise, measurable action verbs from Bloom's Taxonomy or domain-specific frameworks
+- Use precise, measurable action verbs from Bloom's Taxonomy
 - Each objective must be specific, observable, and assessable at a GRANULAR skill level
-- Avoid vague verbs like "understand," "know," "learn," "appreciate" — use concrete verbs like identify, analyze, calculate, design, evaluate, determine, predict, classify
+- Avoid vague verbs: understand, know, learn, appreciate, be familiar with — use concrete verbs like identify, analyze, calculate, design, evaluate, determine, predict, classify
 - Keep objectives concise and focused on ONE discrete skill or task
-- Objectives must be achievable within the scope described in the source content
 
 BLOOM'S TAXONOMY VERBS BY LEVEL:
-- Remember: define, list, identify, recall, recognize, state
-- Understand: explain, describe, summarize, paraphrase, classify, compare
-- Apply: use, solve, demonstrate, calculate, apply, predict, show, determine
-- Analyze: analyze, differentiate, distinguish, examine, investigate, categorize
-- Evaluate: evaluate, assess, critique, judge, justify, defend, argue
-- Create: create, design, construct, develop, formulate, compose, plan
+- Remember (Level 1): define, list, identify, recall, recognize, state
+- Understand (Level 2): explain, describe, summarize, classify, compare, interpret
+- Apply (Level 3): use, solve, demonstrate, calculate, apply, predict, show, determine
+- Analyze (Level 4): analyze, differentiate, distinguish, examine, investigate, categorize
+- Evaluate (Level 5): evaluate, assess, critique, judge, justify, defend, argue
+- Create (Level 6): create, design, construct, develop, formulate, compose, plan
 
-FORMAT REQUIREMENTS (CRITICAL):
-- NEVER start with "Students will" or "Learners will" — start directly with action verb or "Given X, [action verb]"
-- When possible, begin with a condition or context: "Given X, [action verb]..." or "[Action verb] based on/using [context]"
-- Use sentence case (capitalize first word only, unless proper nouns)
-- No contractions, no em dashes
-- One objective = one discrete, testable skill
-- Focus on the SKILL or CONCEPT assessed, not the specific assessment item or example
-- Avoid referencing specific items, questions, or subjects used in the assessment
-- Maximum length: 120 characters preferred
+DREAMSCAPE LEARN PREFERRED STYLE:
+For math and non-lab content, use "Given X, [verb] Y" format:
+✅ "Given a graph of a linear function, find the horizontal or vertical intercept."
+✅ "Given symbolic notation for an equation, express the meaning in words."
+✅ "Given two points of a linear function, determine the slope and intercept."
+✅ "Given a frequency distribution, estimate the proportion of data above a threshold."
+✅ "Given an element's symbol, use a periodic table to determine its atomic number."
 
-PREFERRED OBJECTIVE STYLE (match these patterns):
-✅ CONTEXT-FIRST with "Given X": "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
-✅ CONTEXT-FIRST with "Given X": "Given evidence and a claim, determine whether the evidence supports the claim."
-✅ CONTEXT-FIRST with "Given X": "Given an element's symbol, use a periodic table to determine its atomic number."
-✅ SKILL + CONTEXT: "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable."
-✅ SKILL + METHOD: "Identify an element on the periodic table using its atomic number or number of protons."
-✅ SKILL + CRITERIA: "Determine the group number of an element based on its name, symbol, or atomic number."
-✅ SKILL + CONTEXT: "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table."
-✅ SKILL + CONTEXT: "Predict an element's tendency to lose or gain electrons based on its position within the periodic table."
-✅ SKILL + CONTEXT: "Determine the number of valence electrons of an element based on its position within the periodic table."
+For DSL science lab activities, frame objectives as investigative questions:
+✅ "Objective 1 (Prelab): What types of compounds are present, and how can we separate them?"
+✅ "Objective 2 (Lab): What can chemical evidence from the sample tell us about its origin?"
+✅ "Objective 3 (Postlab): What clues hidden in the data can help trace it to a source?"
 
-CRITICAL - GENERALIZE BEYOND SPECIFIC ITEMS:
-✅ GOOD: "Compare molecular structures to determine how molecular packing affects density."
-❌ BAD: "Predict which polymer has higher density based on molecular structure." (too specific to the assessment item)
-
-✅ GOOD: "Evaluate evidence to determine which molecular structure allows for closer packing."
-❌ BAD: "Determine which of the two samples has higher density." (references specific assessment items)
-
-WRONG STYLE (do not write like this):
-❌ "Students will be able to identify elements on the periodic table"
+FORBIDDEN:
+❌ "Students will be able to identify elements..."
+❌ "Learners will determine..."
 ❌ "Understand the properties of elements"
 ❌ "Learn about periodic trends"
 ❌ "Analyze and interpret data to draw conclusions" (too broad, multiple skills)
-❌ "Predict which polymer has higher density" (too specific to assessment item)
 
-OUTPUT SCHEMA:
-Return valid JSON matching this exact structure:
-{
-  "learning_objectives": [
-    {
-      "id": "LO1",
-      "objective_text": "<concise, measurable objective starting with action verb>",
-      "alignment": "<comprehensive standards alignment string with ALL applicable standards from Bloom's, NGSS, and CCSS; separate multiple standards with ' · '; write COMPLETE standard descriptions without truncation; field can be 500+ characters; or null if none apply>"
-    }
-  ],
-  "metadata": {
-    "audience_level": "<value>",
-    "subject_area": "<value or null>",
-    "framework": "<value>",
-    "source_file_ids": [],
-    "generated_at": "<ISO8601 timestamp>"
-  }
-}
+BLOOM'S LEVEL FIELD:
+For the bloom_level field, return one of exactly these strings:
+"Remember (Level 1)", "Understand (Level 2)", "Apply (Level 3)", "Analyze (Level 4)", "Evaluate (Level 5)", "Create (Level 6)"
 
-CRITICAL ALIGNMENT REQUIREMENTS:
-- Write out FULL, COMPLETE standard descriptions
-- NEVER truncate with "..." or abbreviate standard titles
-- Include ALL applicable standards (Bloom's + all relevant NGSS codes + all relevant CCSS codes)
-- The alignment field has NO character limit - use as much space as needed
-- Separate multiple standards with " · "
+PHASE FIELD:
+- For DSL lab mode: set phase to "Prelab", "Lab", or "Postlab"
+- For all other modes: set phase to null
 
-CRITICAL: Return ONLY valid JSON. No commentary before or after. No markdown code blocks.`;
+ALIGNMENT FIELD (max 220 characters):
+- Include Bloom's taxonomy level + up to 2 relevant standards codes with concise titles
+- Separate with " · "
+- Example: "Bloom's: Apply (Level 3) · NGSS HS-PS1-1: Use periodic table as a model · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units to guide problems"
+- If nothing fits, set to null
+- Do NOT use ellipses or truncate — keep concise but complete
 
-    // Build scope-specific guidance
-    const scopeGuidance = objective_scope === 'course_level'
-      ? `GENERALIZATION REQUIREMENT:
-Create COURSE-LEVEL objectives that are UNIVERSALLY APPLICABLE across any assignment in the course, not tied to specific content or examples.
-- Strip ALL specific examples, names, substances, locations, events, dates, and proper nouns
-- Use ONLY generic, discipline-level terminology (e.g., "elements" not "arsenic"; "data sets" not "arsenic concentrations")
-- Frame objectives with "Given X" to show transferability (e.g., "Given an element's symbol, use a periodic table to...")
-- Focus on core skills, methods, and reasoning that transfer to ANY content in the discipline
-- Make objectives reusable for 10+ different assignments/activities in the same course
+OUTPUT: Return valid JSON matching the schema exactly. No commentary, no markdown blocks.`;
 
-CRITICAL GENERALIZATION RULES:
-1. Replace specific substances/materials → generic categories:
-   ❌ "arsenic" → ✅ "an element" or "a substance"
-   ❌ "silver halide and barium ferrite" → ✅ "metal compounds"
-   ❌ "archival film samples" → ✅ "solid samples" or "materials"
+    // ─── SCOPE GUIDANCE ───────────────────────────────────────────────────────
+    let scopeGuidance = '';
+    if (isDSLLab) {
+      scopeGuidance = `DSL LAB MODE — INVESTIGATIVE QUESTION FORMAT:
+Generate objectives as investigative questions grouped by lab phase (Prelab, Lab, Postlab).
+- Prelab objectives: conceptual foundation, prior knowledge, preparation tasks
+- Lab objectives: hands-on procedures, data collection, measurements
+- Postlab objectives: analysis, interpretation, conclusions, synthesis
 
-2. Replace specific examples → universal patterns:
-   ❌ "Calculate the concentration of arsenic in water samples" → ✅ "Calculate the concentration of a substance in a solution"
-   ❌ "Identify arsenic using the periodic table" → ✅ "Identify an element on the periodic table using its atomic number"
-   ❌ "Analyze arsenic structure to predict reactivity" → ✅ "Analyze the structure of an element to predict its chemical reactivity"
+Each objective should be a question that frames what the student is investigating:
+✅ "What types of compounds are in the boot print, and how can we separate them?"
+✅ "What can chemical evidence from the sample tell us about its origin?"
+✅ "What isotopic clues in the hair sample reveal the suspect's location?"
 
-3. Use "Given X" format for transferability:
-   ✅ "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold"
-   ✅ "Given an element's symbol, use a periodic table to determine its atomic number"
-   ✅ "Given evidence and a claim, determine whether the evidence supports the claim"
+Set the phase field to "Prelab", "Lab", or "Postlab" for each objective.
+Distribute objectives proportionally: roughly 1/3 Prelab, 1/3 Lab, 1/3 Postlab unless content suggests otherwise.`;
+    } else if (objective_scope === 'course_level') {
+      scopeGuidance = `COURSE-LEVEL (GENERALIZED) MODE:
+Create objectives broad enough to apply across any assignment in the course. Strip all specific examples, names, substances, and proper nouns. Use generic, discipline-level terminology.
+- Replace specific substances → generic categories: "arsenic" → "an element"; "silver halide" → "a metal compound"
+- Use "Given X" to show transferability: "Given an element's symbol, use a periodic table to determine its atomic number."
+- Focus on core skills that transfer to ANY content in the discipline
+- Make objectives reusable for 10+ different assignments/activities
 
-4. Focus on METHODS and SKILLS, not specific content:
-   ✅ "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable"
-   ✅ "Interpret frequency distributions to identify patterns"
-   ✅ "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table"
-
-Examples of proper course-level objectives:
-✅ "Determine the group number of an element based on its name, symbol, or atomic number"
-✅ "Predict an element's tendency to lose or gain electrons based on its position within the periodic table"
-✅ "Given a data set, calculate descriptive statistics to summarize central tendency and variability"
-✅ "Evaluate the validity of a scientific claim using quantitative evidence"
-
-WRONG (still too specific):
-❌ "Identify the properties of arsenic using the periodic table"
-❌ "Analyze arsenic contamination in water samples"
-❌ "Calculate arsenic concentration from lab data"`
-      : `SPECIFICITY REQUIREMENT:
-Create TASK-SPECIFIC objectives that directly match the exact content, examples, and activities in this material.
+Set phase to null for all course-level objectives.`;
+    } else {
+      scopeGuidance = `TASK-SPECIFIC MODE:
+Create objectives that directly match the exact content, examples, and activities in this material.
 - Use specific names, materials, and examples from the content
 - Reference the actual tasks students will perform
 - Include specific concepts and terminology mentioned
 - Tie objectives directly to this particular assignment/activity
 
-Examples of task-specific objectives:
-✅ "Compare the chemical composition of silver halide and barium ferrite"
-✅ "Calculate density of archival film samples using water displacement"
-✅ "Identify compounds in ion mobility spectra using reference drift times"`;
-    
-    // Build user prompt
-    const alignmentGuidance = framework === 'all'
-      ? `STANDARDS ALIGNMENT - CRITICAL REQUIREMENTS:
+Set phase to null for all task-specific objectives.`;
+    }
 
-For EVERY objective, provide alignment in the "alignment" field, keeping the string UNDER 220 characters:
+    // ─── ALIGNMENT GUIDANCE ───────────────────────────────────────────────────
+    let alignmentGuidance = '';
+    if (framework === 'all') {
+      alignmentGuidance = `STANDARDS ALIGNMENT (keep under 220 characters total):
+1. BLOOM'S (required): "Bloom's: [Verb] (Level [1-6])"
+2. ${useNGSS ? 'NGSS: up to 2 codes with concise titles (science content only)' : 'NGSS: not applicable for this subject — omit'}
+3. CCSS: up to 2 codes with concise titles when applicable (ELA/Math/cross-disciplinary)
+   - CCSS.ELA-LITERACY.RST for reading science/technical texts
+   - CCSS.MATH for quantitative reasoning
+Separate with " · ". If alignment exceeds 220 chars, keep Bloom's + best single standard only.`;
+    } else if (framework === 'ngss') {
+      alignmentGuidance = useNGSS
+        ? 'Align to NGSS performance expectations. Include code + concise title. Max 220 characters.'
+        : 'NGSS not applicable for this subject area. Set alignment to null or use Bloom\'s only.';
+    } else if (framework === 'ccss') {
+      alignmentGuidance = 'Align to Common Core State Standards. Include code + concise title. Max 220 characters.';
+    } else {
+      alignmentGuidance = 'Align to Bloom\'s Taxonomy levels. Include level name and number. Max 220 characters.';
+    }
 
-1. BLOOM'S TAXONOMY (REQUIRED for all objectives):
-  - Format: "Bloom's: [Verb] (Level [1-6])"
-  - Example: "Bloom's: Analyze (Level 4)"
-
-2. NGSS - Next Generation Science Standards (science content only):
-  - Include up to TWO applicable NGSS items (e.g., one PE + one SEP/CCC) with concise titles
-
-3. CCSS - Common Core State Standards (when applicable):
-  - Include up to TWO applicable CCSS items with concise titles
-
-FORMAT: Single alignment string, separate standards with " · ". Keep concise; prioritize the best matches:
-Examples:
-"Bloom's: Analyze (Level 4) · NGSS HS-PS1-1: Use periodic table as a model · CCSS.ELA-LITERACY.RST.11-12.7: Integrate quantitative information"
-"Bloom's: Apply (Level 3) · NGSS HS-PS1-7: Use math to show atoms are conserved · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units to guide multi-step problems"
-
-CRITICAL:
-- Keep alignment < 220 characters
-- Do not use ellipses; keep full but concise titles
-- If nothing fits, set alignment to null`
-      : framework === 'ngss' 
-      ? 'Align objectives to Next Generation Science Standards (NGSS) performance expectations when possible. Include scientific practices (e.g., "analyze data," "construct explanations," "develop models"). Write out FULL standard descriptions without truncating.'
-      : framework === 'ccss'
-      ? 'Align objectives to Common Core State Standards when possible. Use language from CCSS standards for reading, writing, or mathematics. Write out FULL standard descriptions without truncating.'
-      : 'Align objectives to appropriate Bloom\'s Taxonomy levels. Progress from foundational to higher-order thinking.';
-
+    // ─── USER PROMPT ──────────────────────────────────────────────────────────
     const userPrompt = `TASK: Extract exactly ${targetNumObjectives} discrete learning objectives from the content below.
 
 CONTEXT:
 - Audience level: ${audience_level}
-${subject_area ? `- Subject area: ${subject_area}` : ''}
-- Objective scope: ${objective_scope === 'course_level' ? 'COURSE-LEVEL (generalized)' : 'TASK-SPECIFIC (exact details)'}
-- Framework: ${framework === 'all' ? 'All standards (Bloom\'s + NGSS + CCSS)' : framework}
+${subject_area ? `- Subject area: ${subject_area}` : '- Subject area: not specified'}
+- Objective scope: ${isDSLLab ? 'DSL Lab (investigative question format, phase-grouped)' : objective_scope === 'course_level' ? 'Course-level (generalized)' : 'Task-specific (exact details)'}
+- Framework: ${framework === 'all' ? "All standards (Bloom's + ${useNGSS ? 'NGSS + ' : ''}CCSS)" : framework}
+${contentTruncated ? '- NOTE: Content was truncated to 8000 characters. Prioritize the most prominent tasks.' : ''}
 
 ${scopeGuidance}
 
 CONTENT TO ANALYZE:
 """
-${content_text.substring(0, 6000)}
+${contentForPrompt}
 """
 
-CRITICAL: Before generating objectives, identify ALL student tasks in the content:
-- Questions with answer choices (e.g., "Which polymer has higher density? a) PETE b) Cellulose")
-- Numbered directions or steps (e.g., "1. Weigh the sample 2. Add water 3. Measure volume")
-- Lab procedures describing what students do (e.g., "Students will measure..., calculate..., observe...")
-- Assessment items asking students to analyze, compare, evaluate, or conclude
-- "Directions" sections that tell students what to do
-- Feedback explanations that reveal what skill/knowledge is being tested
-
-For each task found, create an objective that captures the required skill or knowledge.
-
 INSTRUCTIONS:
-1. **FIRST, scan the content for explicitly stated objectives or learning outcomes:**
-   - Look for sections labeled: "objectives," "learning objectives," "outcomes," "students will," "you will complete"
-   - Look for numbered lists or bullet points describing what students will do
-   - Look for mission objectives, steps, or tasks explicitly stated
-   - If explicit objectives are found, EXTRACT and REFORMAT them (do not create new ones)
-   
-2. **If explicit objectives exist:**
-   - Extract each stated objective verbatim or with minimal rewording
-   - Convert to proper learning objective format (start with action verb, student-centered)
-   - Preserve specific details, examples, and terminology from the source
-   - Generate EXACTLY ${targetNumObjectives} objectives by extracting the most important ones
-   
-3. **If no explicit objectives exist, REVERSE-ENGINEER objectives from student tasks:**
-   - **Analyze what students are asked to DO in the assignment:**
-     * Look for questions students must answer (e.g., "Which polymer has higher density?")
-     * Look for calculations students must perform (e.g., "Calculate density using mass ÷ volume")
-     * Look for procedures students must follow (e.g., "Measure mass, add water, record volume")
-     * Look for analyses students must make (e.g., "Compare the flame colors to identify metals")
-     * Look for decisions/judgments students must justify (e.g., "Determine which film matches the sample")
-     * Look for data interpretation tasks (e.g., "Interpret the ion mobility spectrum")
-     * Look for comparisons students must draw (e.g., "Compare PETE and cellulose structures")
-   
-   - **Convert each student task into a learning objective:**
-     * Question: "Which polymer has higher density?" → Objective: "Predict which polymer has higher density based on molecular structure"
-     * Calculation: "Calculate density = mass ÷ volume" → Objective: "Calculate density from mass and volume measurements"
-     * Procedure: "Weigh film, add water, measure displacement" → Objective: "Measure density using water displacement method"
-     * Analysis: "Compare flame colors to identify metals" → Objective: "Identify metal ions using flame test observations"
-     * Lab directions: "Prepare sugar solution, observe if sample floats/sinks" → Objective: "Determine material identity using density comparison methods"
-   
-   - **Focus on the cognitive skills and content knowledge required:**
-     * What must students understand to complete the task?
-     * What skills must they demonstrate?
-     * What concepts must they apply?
-   
-   - Generate EXACTLY ${targetNumObjectives} specific, measurable learning objectives based on these tasks
-   
-4. ${alignmentGuidance}
+1. Scan for explicitly stated objectives or learning outcomes first:
+   - Sections labeled "objectives," "learning goals," "outcomes," "students will," "you will complete"
+   - Numbered lists describing what students will do
+   - If found, EXTRACT and REFORMAT them to match DSL style
 
-5. Order objectives by instructional priority (foundational concepts first, then applications)
+2. If no explicit objectives exist, reverse-engineer from student tasks:
+   - Questions students must answer
+   - Calculations students must perform
+   - Procedures students must follow
+   - Analyses or judgments students must make
+   - Data interpretation tasks
 
-6. CRITICAL: Match the EXACT STYLE of these examples:
-   ✅ "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
-   ✅ "Identify an element on the periodic table using its atomic number or number of protons."
-   ✅ "Determine the group number of an element based on its name, symbol, or atomic number."
-   ✅ "Predict an element's tendency to lose or gain electrons based on its position within the periodic table."
-   
-   NEVER write:
-   ❌ "Students will identify elements..."
-   ❌ "Learners will be able to determine..."
-   ❌ "Understand periodic trends"
+3. ${alignmentGuidance}
 
-7. Ensure each objective:
-   - Starts DIRECTLY with action verb OR "Given X, [action verb]..." (NO "Students will")
-   - Is concise and specific (one discrete skill per objective)
-   - Is granular and testable
-   - ${objective_scope === 'course_level' ? 'Uses generalized terminology (e.g., "an element" not "arsenic")' : 'Uses specific terminology from the content'}
+4. Order objectives by instructional sequence (foundational first, higher-order last).
 
-8. For alignment field:
-  - If framework = "all": include Bloom's level + up to 2 NGSS codes + up to 2 CCSS codes; separate with " · "
-  - IMPORTANT: keep alignment under 220 characters; prefer the single best standards if space is tight
-  - CCSS applies across ALL disciplines: CCSS.ELA-LITERACY.RST (Reading Science & Technical Subjects), CCSS.ELA-LITERACY.WHST (Writing History/Science/Technical), CCSS.MATH for quantitative reasoning
-  - Otherwise: include the most relevant single alignment (Bloom's level, NGSS code, or CCSS code)
-  - Include standard codes AND concise descriptions (e.g., NGSS HS-PS1-1; CCSS.ELA-LITERACY.RST.11-12.7; CCSS.MATH.CONTENT.HSN.Q.A.3)
-  - If no specific standard applies, set to null
-  - Examples of concise multi-standard alignment:
-    * "Bloom's: Apply (Level 3) · NGSS HS-PS1-3: Plan and conduct an investigation · CCSS.ELA-LITERACY.RST.11-12.7: Integrate quantitative information"
-    * "Bloom's: Evaluate (Level 5) · CCSS.ELA-LITERACY.WHST.11-12.1: Write arguments focused on discipline-specific content"
-    * "Bloom's: Analyze (Level 4) · NGSS HS-PS1-1: Use the periodic table as a model · CCSS.MATH.CONTENT.HSN.Q.A.1: Use units to understand problems"
+5. STYLE — match these exactly:
+   ✅ "Given a graph of a linear function, find the slope."
+   ✅ "Given two points of a linear function, determine the slope and intercept."
+   ✅ "Classify an element as metal, metalloid, or nonmetal based on its position in the periodic table."
+   ✅ "Predict an element's tendency to lose or gain electrons based on its position in the periodic table."
+   ✅ "Given evidence and a claim, determine whether the evidence supports the claim."
 
-OBJECTIVE COUNT REQUIREMENT:
-- Generate EXACTLY ${targetNumObjectives} objectives TOTAL
-- If multiple assessment items target the same skill, CLUSTER them into one objective that covers the shared capability
-- Ensure every major task/skill is covered, but keep the list concise (no more than ${targetNumObjectives})
+6. bloom_level field: use EXACTLY one of these strings:
+   "Remember (Level 1)", "Understand (Level 2)", "Apply (Level 3)", "Analyze (Level 4)", "Evaluate (Level 5)", "Create (Level 6)"
 
-OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning objectives, ordered by instructional sequence.`;
+7. phase field: ${isDSLLab ? '"Prelab", "Lab", or "Postlab" — distribute proportionally' : 'null for all objectives'}
 
-    // Call OpenAI API
+8. Generate EXACTLY ${targetNumObjectives} objectives. Cluster similar skills into one objective rather than repeating.
+
+OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning objectives.`;
+
+    // ─── API CALL ─────────────────────────────────────────────────────────────
     console.log('Calling OpenAI API for learning objectives generation...');
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-5.4',
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
       ],
-      temperature: 0.3, // Low temperature for consistency
-      max_tokens: 2400,
-      response_format: { type: 'json_object' } // Force JSON output
+      temperature: 0.2,
+      max_tokens: 3200,
+      response_format: LO_JSON_SCHEMA
     });
 
-    const responseText = completion.choices[0].message.content;
-    console.log('OpenAI response received');
+    // Check for refusal (gpt-5.4 structured output refusal pattern)
+    const choice = completion.choices[0];
+    if (choice.finish_reason === 'refusal' || choice.message.refusal) {
+      throw new Error('AI declined to generate objectives for this content.');
+    }
 
-    // Robust JSON parse with fallback trimming (models sometimes return truncated JSON)
-    const safeParseJSON = (text) => {
-      try {
-        return JSON.parse(text);
-      } catch (err) {
-        const lastBrace = text.lastIndexOf('}');
-        if (lastBrace > 0) {
-          const trimmed = text.slice(0, lastBrace + 1);
-          return JSON.parse(trimmed);
-        }
-        throw err;
-      }
-    };
+    const responseText = choice.message.content;
+    console.log('OpenAI response received');
 
     let result;
     try {
-      result = safeParseJSON(responseText);
+      result = JSON.parse(responseText);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
-      console.error('Response text:', responseText);
       throw new Error('AI returned invalid JSON format');
     }
 
@@ -499,36 +473,40 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
       throw new Error('Invalid response structure: missing learning_objectives array');
     }
 
-    // Ensure metadata exists
-    if (!result.metadata) {
-      result.metadata = {};
+    // Server-side validation: flag any vague/wrong-prefix objectives
+    const validationIssues = validateObjectives(result.learning_objectives);
+    if (validationIssues.length > 0) {
+      console.warn('Objective validation warnings:', validationIssues);
+      // Attach warnings to response but do not block — let frontend show them
+      result._validation_warnings = validationIssues;
     }
 
-    // Fill in metadata
-    result.metadata.audience_level = audience_level;
-    result.metadata.subject_area = subject_area;
-    result.metadata.objective_scope = objective_scope;
-    result.metadata.framework = framework;
-    result.metadata.source_file_ids = [];
-    result.metadata.generated_at = new Date().toISOString();
-
-    // Auto-append NGSS alignments for high school using lightweight similarity
-    if (framework === 'all' || framework === 'ngss') {
+    // Auto-append NGSS alignments — only for science content
+    if (useNGSS) {
       result.learning_objectives = result.learning_objectives.map((lo) => {
-        const matches = getTopNgssMatches(lo.objective_text, 3, 0.08);
+        const matches = getTopNgssMatches(lo.objective_text, 2, 0.15);
         if (matches.length) {
           const ngssString = matches.map(m => `${m.code}: ${m.summary}`).join(' · ');
-          if (lo.alignment && lo.alignment.trim()) {
-            lo.alignment = `${lo.alignment} · ${ngssString}`;
-          } else {
-            lo.alignment = ngssString;
-          }
+          const existing = lo.alignment ? lo.alignment.trim() : '';
+          // Only append if total stays under 220 chars
+          const combined = existing ? `${existing} · ${ngssString}` : ngssString;
+          lo.alignment = combined.length <= 220 ? combined : existing || ngssString.substring(0, 220);
         }
         return lo;
       });
     }
 
-    // Return successful response
+    // Fill in metadata
+    result.metadata = {
+      audience_level,
+      subject_area,
+      objective_scope,
+      framework,
+      source_file_ids: [],
+      generated_at: new Date().toISOString(),
+      content_truncated: contentTruncated
+    };
+
     return {
       statusCode: 200,
       headers,
@@ -537,7 +515,7 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
 
   } catch (error) {
     console.error('Error in generate-learning-objectives function:', error);
-    
+
     return {
       statusCode: 500,
       headers,

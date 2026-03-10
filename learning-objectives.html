@@ -317,6 +317,33 @@
             }
         }
 
+        .phase-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .phase-prelab { background: #dbeafe; color: #1e40af; }
+        .phase-lab    { background: #dcfce7; color: #166534; }
+        .phase-postlab{ background: #fef9c3; color: #854d0e; }
+
+        .bloom-badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .bloom-1 { background: #f3f4f6; color: #374151; }
+        .bloom-2 { background: #e0f2fe; color: #0369a1; }
+        .bloom-3 { background: #dcfce7; color: #166534; }
+        .bloom-4 { background: #fef3c7; color: #92400e; }
+        .bloom-5 { background: #fee2e2; color: #991b1b; }
+        .bloom-6 { background: #f3e8ff; color: #6b21a8; }
+
         /* Research section styles */
         .research-section .lead {
             color: #555;
@@ -367,10 +394,14 @@
                 
                 <div class="form-group">
                     <label for="contentText">Or Paste Course Content *</label>
-                    <textarea 
-                        id="contentText" 
+                    <textarea
+                        id="contentText"
                         placeholder="Paste your syllabus, assignment description, lesson outline, or other educational content here..."
                     ></textarea>
+                    <div id="contentLengthWarning" style="display:none; margin-top:6px; padding:8px 12px; background:#fff3cd; border:1px solid #ffc107; border-radius:6px; color:#856404; font-size:0.9rem;">
+                        Content exceeds 8,000 characters — only the first 8,000 will be sent to the AI. Consider trimming or splitting the content for best results.
+                    </div>
+                    <small style="color: #666; display: block; margin-top: 5px;" id="contentCharCount"></small>
                 </div>
                 
                 <div class="form-row">
@@ -386,11 +417,21 @@
                     
                     <div class="form-group">
                         <label for="subjectArea">Subject Area (Optional)</label>
-                        <input 
-                            type="text" 
-                            id="subjectArea" 
-                            placeholder="e.g., Chemistry, History, Biology"
-                        >
+                        <select id="subjectArea">
+                            <option value="">-- Select or type below --</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Earth Science">Earth Science</option>
+                            <option value="Environmental Science">Environmental Science</option>
+                            <option value="Forensic Science">Forensic Science</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Statistics">Statistics</option>
+                            <option value="English / ELA">English / ELA</option>
+                            <option value="History">History</option>
+                            <option value="Social Studies">Social Studies</option>
+                            <option value="Other">Other</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -399,10 +440,12 @@
                     <select id="objectiveScope" required>
                         <option value="course_level" selected>Course-Level (generalized for broader use)</option>
                         <option value="task_specific">Task-Specific (matches exact content details)</option>
+                        <option value="dsl_lab">Dreamscape Learn Lab (investigative question format)</option>
                     </select>
-                    <small style="color: #666; display: block; margin-top: 5px;">
-                        Task-specific: "Compare the chemical composition of silver halide and barium ferrite"<br>
-                        Course-level: "Compare the chemical composition of metal salts"
+                    <small style="color: #666; display: block; margin-top: 5px;" id="scopeHint">
+                        <span id="scopeHint_course"><strong>Course-level:</strong> "Given a linear function, determine the slope and intercept."</span>
+                        <span id="scopeHint_task" style="display:none;"><strong>Task-specific:</strong> "Compare the chemical composition of silver halide and barium ferrite."</span>
+                        <span id="scopeHint_dsl" style="display:none;"><strong>DSL Lab:</strong> Objectives framed as investigative questions grouped by Prelab / Lab / Postlab phase.</span>
                     </small>
                 </div>
                 
@@ -419,15 +462,14 @@
                     
                     <div class="form-group">
                         <label for="numObjectives">Number of Objectives</label>
-                        <input 
-                            type="number" 
-                            id="numObjectives" 
-                            min="1" 
-                            max="20" 
-                            placeholder="Auto-detect from content"
+                        <input
+                            type="text"
+                            id="numObjectives"
+                            placeholder="auto"
+                            pattern="auto|[1-9][0-9]?"
                         >
                         <small style="color: #666; display: block; margin-top: 5px;">
-                            Leave as "auto" to generate 1 objective per activity/assessment
+                            Type a number (1–12) or leave blank for auto-detect from content
                         </small>
                     </div>
                 </div>
@@ -453,13 +495,19 @@
         <div id="outputSection" class="output-section hidden">
             <h2>Generated Learning Objectives</h2>
             
+            <div id="truncationWarning" style="display:none; margin-bottom:12px; padding:8px 12px; background:#fff3cd; border:1px solid #ffc107; border-radius:6px; color:#856404; font-size:0.9rem;">
+                Content was truncated before sending — objectives reflect only the first 8,000 characters of your input.
+            </div>
+            <div id="validationWarnings" style="display:none; margin-bottom:12px; padding:8px 12px; background:#f8d7da; border:1px solid #f5c6cb; border-radius:6px; color:#721c24; font-size:0.9rem;"></div>
             <table class="results-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">#</th>
-                        <th style="width: 45%;">Learning Objective</th>
-                        <th style="width: 40%;">Standards Alignment</th>
-                        <th style="width: 15%;">Actions</th>
+                        <th style="width: 60px;">#</th>
+                        <th id="phaseCol" style="width: 90px; display:none;">Phase</th>
+                        <th>Learning Objective</th>
+                        <th style="width: 130px;">Bloom's Level</th>
+                        <th style="width: 30%;">Standards Alignment</th>
+                        <th style="width: 120px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="resultsTableBody">

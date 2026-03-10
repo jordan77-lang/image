@@ -126,8 +126,30 @@ PREFERRED OBJECTIVE STYLE
 - Follow with a measurable action verb and the concept or skill
 - Avoid referencing specific assessment items or examples
 - Use discipline-specific nouns and clear, direct language
+- NEVER begin with "Students will be able to" or "Learners will"
 
-EXAMPLES:
+DREAMSCAPE LEARN CANONICAL EXAMPLES — MATH (from MAT 117):
+✓ "Find the domain of an algebraic function."
+✓ "Determine whether a set of coordinates (x, y) represents a function."
+✓ "Given symbolic notation for an equation, express the meaning in words."
+✓ "Given a quantitative description of a relationship in English, provide the correct symbolic notation."
+✓ "Given symbolic notation for a function, express the meaning of the inverse function in words."
+✓ "Given a graph of a linear function, find the horizontal or vertical intercept."
+✓ "Given a graph of a linear function, find the slope."
+✓ "Given a graph of a linear function, identify whether the function is increasing or decreasing."
+✓ "Given two points of a linear function, determine the slope and intercept of the function."
+✓ "Given two functions, f(x) and g(x), find the composition function."
+✓ "Given a function and the value of the independent variable, find the value of the dependent variable."
+✓ "Given a function and the value of the dependent variable, find the value of the independent variable."
+✓ "Given an equation containing one variable, find all values of x for which f(x) equals a certain value."
+
+DREAMSCAPE LEARN CANONICAL EXAMPLES — SCIENCE LAB (from The Chameleon Code, Mod 1 Act 1):
+Lab objectives are framed as INVESTIGATIVE QUESTIONS grouped by phase:
+✓ Prelab:  "What types of compounds are in the boot print, and how can we separate them?"
+✓ Lab:     "What can chemical evidence from the boot print tell us about its origin?"
+✓ Postlab: "What clues hidden in the hair sample can help trace it to a place of origin?"
+
+GENERAL STYLE EXAMPLES:
 ✓ "Given a frequency distribution (e.g., histogram), estimate the proportion of data above a certain threshold."
 ✓ "Predict the type of quantitative evidence needed to justify a claim about the expected value of a variable."
 ✓ "Given evidence and a claim, determine whether the evidence supports the claim."
@@ -137,6 +159,13 @@ EXAMPLES:
 ✓ "Classify an element as a metal, metalloid, or nonmetal based on its position within the periodic table."
 ✓ "Predict an element’s tendency to lose or gain electrons based on its position within the periodic table."
 ✓ "Determine the number of valence electrons of an element based on its position within the periodic table."
+
+DSL LAB MODE — PHASE GROUPING:
+When generating objectives for a Dreamscape Learn lab activity, group by phase:
+- Prelab:  Conceptual foundation, prior knowledge activation, preparation tasks
+- Lab:     Hands-on procedures, data collection, measurements, real-time analysis
+- Postlab: Data interpretation, synthesis, conclusions, connections to broader concepts
+Each phase objective is framed as a question: "What can X tell us about Y?"
 
 
 STANDARDS ALIGNMENT GUIDANCE
