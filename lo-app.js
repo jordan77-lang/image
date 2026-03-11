@@ -34,7 +34,7 @@ document.getElementById('objectiveScope').addEventListener('change', function ()
 // Content length counter and warning
 document.getElementById('contentText').addEventListener('input', function () {
     const len = this.value.length;
-    const limit = 8000;
+    const limit = 30000;
     const countEl = document.getElementById('contentCharCount');
     const warnEl  = document.getElementById('contentLengthWarning');
     if (len > 0) {

@@ -194,7 +194,7 @@ exports.handler = async (event, context) => {
     }
 
     // Warn if content was truncated on client — flag in response
-    const CONTENT_LIMIT = 8000;
+    const CONTENT_LIMIT = 30000;
     const contentTruncated = content_text.length > CONTENT_LIMIT;
     const contentForPrompt = content_text.substring(0, CONTENT_LIMIT);
 
@@ -397,7 +397,7 @@ CONTEXT:
 ${subject_area ? `- Subject area: ${subject_area}` : '- Subject area: not specified'}
 - Objective scope: ${isDSLLab ? 'DSL Lab (investigative question format, phase-grouped)' : objective_scope === 'course_level' ? 'Course-level (generalized)' : 'Task-specific (exact details)'}
 - Framework: ${framework === 'all' ? "All standards (Bloom's + ${useNGSS ? 'NGSS + ' : ''}CCSS)" : framework}
-${contentTruncated ? '- NOTE: Content was truncated to 8000 characters. Prioritize the most prominent tasks.' : ''}
+${contentTruncated ? '- NOTE: Content was truncated to 30000 characters. Prioritize the most prominent tasks.' : ''}
 
 ${scopeGuidance}
 
