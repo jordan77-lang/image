@@ -249,7 +249,9 @@ document.getElementById('loForm').addEventListener('submit', async (e) => {
         
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || `Server error: ${response.status}`);
+            const detail = errorData.detail ? ` (${errorData.detail})` : '';
+            const msg = errorData.message ? `: ${errorData.message}${detail}` : ` (HTTP ${response.status})`;
+            throw new Error((errorData.error || 'Server error') + msg);
         }
         
         const data = await response.json();

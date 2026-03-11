@@ -440,19 +440,46 @@ INSTRUCTIONS:
 OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning objectives.`;
 
     // ─── API CALL ─────────────────────────────────────────────────────────────
-    console.log('Calling OpenAI API for learning objectives generation...');
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-5.4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      temperature: 0.2,
-      max_tokens: 3200,
-      response_format: LO_JSON_SCHEMA
-    });
+    // Try preferred model first, fall back to gpt-4o if unavailable on this account
+    const PREFERRED_MODEL = 'gpt-5.4';
+    const FALLBACK_MODEL  = 'gpt-4o';
 
-    // Check for refusal (gpt-5.4 structured output refusal pattern)
+    let completion;
+    let modelUsed = PREFERRED_MODEL;
+    try {
+      console.log(`Calling OpenAI API with model: ${PREFERRED_MODEL}`);
+      completion = await openai.chat.completions.create({
+        model: PREFERRED_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.2,
+        max_tokens: 3200,
+        response_format: LO_JSON_SCHEMA
+      });
+    } catch (modelError) {
+      // If model not found or not accessible, fall back to gpt-4o
+      if (modelError.status === 404 || modelError.status === 400 || modelError.code === 'model_not_found') {
+        console.warn(`${PREFERRED_MODEL} not available (${modelError.message}), falling back to ${FALLBACK_MODEL}`);
+        modelUsed = FALLBACK_MODEL;
+        completion = await openai.chat.completions.create({
+          model: FALLBACK_MODEL,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 3200,
+          response_format: LO_JSON_SCHEMA
+        });
+      } else {
+        throw modelError;
+      }
+    }
+    console.log(`OpenAI response received (model: ${modelUsed})`);
+
+    // Check for refusal
     const choice = completion.choices[0];
     if (choice.finish_reason === 'refusal' || choice.message.refusal) {
       throw new Error('AI declined to generate objectives for this content.');
@@ -522,7 +549,9 @@ OUTPUT: Return the JSON object with EXACTLY ${targetNumObjectives} learning obje
       headers,
       body: JSON.stringify({
         error: 'Failed to generate learning objectives',
-        message: error.message
+        message: error.message,
+        detail: error.status ? `HTTP ${error.status}: ${error.code || ''}` : undefined,
+        type: error.constructor?.name
       })
     };
   }
